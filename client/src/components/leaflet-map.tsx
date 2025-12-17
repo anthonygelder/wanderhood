@@ -310,7 +310,7 @@ export function LeafletMap({
   const activeFilterCount = Object.values(transitFilters).filter(v => v).length;
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative w-full h-[500px] md:h-[600px] lg:h-[700px]">
       <div ref={mapRef} className="h-full w-full rounded-lg" />
       
       {selected && (
