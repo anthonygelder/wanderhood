@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScoreBar } from "@/components/score-bar";
-import { X, MapPin, Train, Footprints, Utensils, ExternalLink, Bus, Ship, Layers, ChevronDown } from "lucide-react";
+import { X, MapPin, Train, Footprints, Utensils, ExternalLink, Bus, Ship, Layers, ChevronDown, Bike } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,11 +17,8 @@ import {
 import type { Neighborhood, City } from "@shared/schema";
 
 interface TransitFilters {
-  rapidTransit: boolean;
-  bus: boolean;
-  ferry: boolean;
-  commuterRail: boolean;
-  intercity: boolean;
+  publicTransport: boolean;
+  cycling: boolean;
 }
 
 interface LeafletMapProps {
@@ -44,18 +41,14 @@ export function LeafletMap({
   const markersRef = useRef<L.Marker[]>([]);
   const labelsRef = useRef<L.Marker[]>([]);
   const transitLayerRef = useRef<L.TileLayer | null>(null);
+  const cyclingLayerRef = useRef<L.TileLayer | null>(null);
   
   const [transitFilters, setTransitFilters] = useState<TransitFilters>({
-    rapidTransit: true,
-    bus: false,
-    ferry: false,
-    commuterRail: true,
-    intercity: false,
+    publicTransport: true,
+    cycling: false,
   });
   
   const selected = neighborhoods.find((n) => n.id === selectedNeighborhood);
-
-  const hasAnyTransitFilter = Object.values(transitFilters).some(v => v);
 
   const getScoreColor = (score: number): string => {
     if (score >= 85) return "#22c55e";
@@ -110,7 +103,7 @@ export function LeafletMap({
       transitLayerRef.current = null;
     }
 
-    if (hasAnyTransitFilter) {
+    if (transitFilters.publicTransport) {
       transitLayerRef.current = L.tileLayer(
         "https://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=6170aad10dfd42a38d4d8c709a536f38",
         {
@@ -120,7 +113,27 @@ export function LeafletMap({
         }
       ).addTo(mapInstanceRef.current);
     }
-  }, [hasAnyTransitFilter]);
+  }, [transitFilters.publicTransport]);
+
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+
+    if (cyclingLayerRef.current) {
+      mapInstanceRef.current.removeLayer(cyclingLayerRef.current);
+      cyclingLayerRef.current = null;
+    }
+
+    if (transitFilters.cycling) {
+      cyclingLayerRef.current = L.tileLayer(
+        "https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=6170aad10dfd42a38d4d8c709a536f38",
+        {
+          attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>',
+          maxZoom: 18,
+          opacity: 0.7,
+        }
+      ).addTo(mapInstanceRef.current);
+    }
+  }, [transitFilters.cycling]);
 
   useEffect(() => {
     if (!mapInstanceRef.current) return;
@@ -281,7 +294,7 @@ export function LeafletMap({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
-                    variant={hasAnyTransitFilter ? "default" : "outline"}
+                    variant={activeFilterCount > 0 ? "default" : "outline"}
                     size="sm"
                     className="shadow-lg"
                     data-testid="button-transit-filters"
@@ -297,47 +310,23 @@ export function LeafletMap({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 z-[1100]">
-                  <DropdownMenuLabel>Transit Types</DropdownMenuLabel>
+                  <DropdownMenuLabel>Map Layers</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuCheckboxItem
-                    checked={transitFilters.rapidTransit}
-                    onCheckedChange={() => toggleFilter("rapidTransit")}
-                    data-testid="filter-rapid-transit"
+                    checked={transitFilters.publicTransport}
+                    onCheckedChange={() => toggleFilter("publicTransport")}
+                    data-testid="filter-public-transport"
                   >
                     <Train className="w-4 h-4 mr-2" />
-                    Rapid Transit / Metro
+                    Public Transport (Metro, Bus, Tram)
                   </DropdownMenuCheckboxItem>
                   <DropdownMenuCheckboxItem
-                    checked={transitFilters.commuterRail}
-                    onCheckedChange={() => toggleFilter("commuterRail")}
-                    data-testid="filter-commuter-rail"
+                    checked={transitFilters.cycling}
+                    onCheckedChange={() => toggleFilter("cycling")}
+                    data-testid="filter-cycling"
                   >
-                    <Train className="w-4 h-4 mr-2" />
-                    Commuter Rail
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem
-                    checked={transitFilters.bus}
-                    onCheckedChange={() => toggleFilter("bus")}
-                    data-testid="filter-bus"
-                  >
-                    <Bus className="w-4 h-4 mr-2" />
-                    Bus Routes
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem
-                    checked={transitFilters.ferry}
-                    onCheckedChange={() => toggleFilter("ferry")}
-                    data-testid="filter-ferry"
-                  >
-                    <Ship className="w-4 h-4 mr-2" />
-                    Ferry Routes
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem
-                    checked={transitFilters.intercity}
-                    onCheckedChange={() => toggleFilter("intercity")}
-                    data-testid="filter-intercity"
-                  >
-                    <Train className="w-4 h-4 mr-2" />
-                    Intercity Transit
+                    <Bike className="w-4 h-4 mr-2" />
+                    Cycling Infrastructure
                   </DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
               </DropdownMenu>
