@@ -1,18 +1,124 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+// City schema
+export const citySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  country: z.string(),
+  slug: z.string(),
+  description: z.string(),
+  heroImage: z.string(),
+  coordinates: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }),
+  timezone: z.string(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export type City = z.infer<typeof citySchema>;
+
+// Neighborhood scores
+export const neighborhoodScoresSchema = z.object({
+  walkability: z.number().min(0).max(100),
+  transitConnectivity: z.number().min(0).max(100),
+  safety: z.number().min(0).max(100),
+  foodCoffeeDensity: z.number().min(0).max(100),
+  nightlife: z.number().min(0).max(100),
+  touristFriendliness: z.number().min(0).max(100),
+  localVibes: z.number().min(0).max(100),
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export type NeighborhoodScores = z.infer<typeof neighborhoodScoresSchema>;
+
+// Neighborhood schema
+export const neighborhoodSchema = z.object({
+  id: z.string(),
+  cityId: z.string(),
+  name: z.string(),
+  slug: z.string(),
+  description: z.string(),
+  aiDescription: z.string().optional(),
+  heroImage: z.string(),
+  vibe: z.array(z.string()),
+  scores: neighborhoodScoresSchema,
+  highlights: z.array(z.string()),
+  transitHubs: z.array(z.string()),
+  priceLevel: z.enum(["budget", "moderate", "upscale", "luxury"]),
+  coordinates: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }),
+  boundaryCoordinates: z.array(z.array(z.number())),
+});
+
+export type Neighborhood = z.infer<typeof neighborhoodSchema>;
+
+// Hotel schema
+export const hotelSchema = z.object({
+  id: z.string(),
+  neighborhoodId: z.string(),
+  name: z.string(),
+  starRating: z.number().min(1).max(5),
+  priceRange: z.string(),
+  image: z.string(),
+  affiliateUrl: z.string(),
+  description: z.string(),
+});
+
+export type Hotel = z.infer<typeof hotelSchema>;
+
+// Questionnaire types
+export const budgetOptionsSchema = z.enum(["budget", "moderate", "upscale", "luxury"]);
+export type BudgetOption = z.infer<typeof budgetOptionsSchema>;
+
+export const vibeOptionsSchema = z.enum([
+  "quiet",
+  "artsy",
+  "hip",
+  "historic",
+  "foodie",
+  "party",
+  "waterfront",
+  "family",
+]);
+export type VibeOption = z.infer<typeof vibeOptionsSchema>;
+
+export const travelStyleOptionsSchema = z.enum(["walk", "transit", "mixed"]);
+export type TravelStyleOption = z.infer<typeof travelStyleOptionsSchema>;
+
+export const tripPurposeOptionsSchema = z.enum([
+  "solo",
+  "couples",
+  "remote_work",
+  "foodie_trip",
+  "family",
+  "friends",
+]);
+export type TripPurposeOption = z.infer<typeof tripPurposeOptionsSchema>;
+
+// Questionnaire input schema
+export const questionnaireInputSchema = z.object({
+  cityId: z.string(),
+  budget: budgetOptionsSchema,
+  vibes: z.array(vibeOptionsSchema).min(1).max(3),
+  travelStyle: travelStyleOptionsSchema,
+  tripPurpose: tripPurposeOptionsSchema,
+});
+
+export type QuestionnaireInput = z.infer<typeof questionnaireInputSchema>;
+
+// Recommendation result schema
+export const recommendationSchema = z.object({
+  neighborhood: neighborhoodSchema,
+  matchScore: z.number().min(0).max(100),
+  rank: z.number(),
+  matchReasons: z.array(z.string()),
+});
+
+export type Recommendation = z.infer<typeof recommendationSchema>;
+
+// API response schemas
+export const citiesResponseSchema = z.array(citySchema);
+export const neighborhoodsResponseSchema = z.array(neighborhoodSchema);
+export const hotelsResponseSchema = z.array(hotelSchema);
+export const recommendationsResponseSchema = z.array(recommendationSchema);
