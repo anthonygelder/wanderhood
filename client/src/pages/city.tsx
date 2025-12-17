@@ -7,7 +7,8 @@ import { CityHero } from "@/components/city-hero";
 import { Questionnaire } from "@/components/questionnaire";
 import { RecommendationsSection } from "@/components/recommendations-section";
 import { NeighborhoodComparison } from "@/components/neighborhood-comparison";
-import { InteractiveMap } from "@/components/interactive-map";
+import { LeafletMap } from "@/components/leaflet-map";
+import { HotelsSection } from "@/components/hotels-section";
 import { ResultsMapSection } from "@/components/results-map-section";
 import { FAQSection } from "@/components/faq-section";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -166,12 +167,17 @@ export default function CityPage() {
     <div className="min-h-screen bg-background" data-testid={`page-city-${slug}`}>
       <Header cities={cities} />
       <CityHero city={city} onStartQuestionnaire={handleStartQuestionnaire} />
-      <InteractiveMap
+      <LeafletMap
         city={city}
         neighborhoods={neighborhoods}
         selectedNeighborhood={selectedNeighborhood}
         onNeighborhoodSelect={setSelectedNeighborhood}
         onViewHotels={handleMapViewHotels}
+      />
+      <HotelsSection 
+        cityId={city.id}
+        neighborhoods={neighborhoods}
+        selectedNeighborhood={selectedNeighborhood}
       />
       <NeighborhoodComparison neighborhoods={neighborhoods} />
       <FAQSection />

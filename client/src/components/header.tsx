@@ -22,7 +22,17 @@ interface HeaderProps {
 
 export function Header({ cities, selectedCity, onCityChange, transparent = false }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
+
+  const handleCitySelect = (citySlug: string) => {
+    if (onCityChange) {
+      onCityChange(citySlug);
+    }
+    const city = cities?.find(c => c.id === citySlug);
+    if (city) {
+      navigate(`/city/${city.slug}`);
+    }
+  };
 
   return (
     <header
@@ -45,7 +55,7 @@ export function Header({ cities, selectedCity, onCityChange, transparent = false
 
         <nav className="hidden md:flex items-center gap-6">
           {cities && cities.length > 0 && (
-            <Select value={selectedCity} onValueChange={onCityChange}>
+            <Select value={selectedCity} onValueChange={handleCitySelect}>
               <SelectTrigger className="w-[180px]" data-testid="select-city">
                 <SelectValue placeholder="Select a city" />
               </SelectTrigger>
@@ -87,7 +97,7 @@ export function Header({ cities, selectedCity, onCityChange, transparent = false
       {mobileMenuOpen && (
         <div className="md:hidden bg-background border-b border-border px-6 py-4 space-y-4">
           {cities && cities.length > 0 && (
-            <Select value={selectedCity} onValueChange={onCityChange}>
+            <Select value={selectedCity} onValueChange={handleCitySelect}>
               <SelectTrigger className="w-full" data-testid="select-city-mobile">
                 <SelectValue placeholder="Select a city" />
               </SelectTrigger>

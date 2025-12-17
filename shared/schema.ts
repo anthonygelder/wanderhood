@@ -84,10 +84,13 @@ export const hotelSchema = z.object({
   neighborhoodId: z.string(),
   name: z.string(),
   starRating: z.number().min(1).max(5),
+  rating: z.number().min(0).max(10),
   priceRange: z.string(),
   image: z.string(),
   affiliateUrl: z.string(),
   description: z.string(),
+  distanceToTransit: z.string(),
+  amenities: z.array(z.string()),
 });
 
 export type Hotel = z.infer<typeof hotelSchema>;
