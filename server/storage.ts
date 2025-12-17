@@ -3,8 +3,13 @@ import type {
   Neighborhood, 
   Hotel, 
   QuestionnaireInput, 
-  Recommendation 
+  Recommendation,
+  Favorite,
+  InsertFavorite
 } from "@shared/schema";
+import { favorites } from "@shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   getCities(): Promise<City[]>;
@@ -16,6 +21,12 @@ export interface IStorage {
   getHotelsByNeighborhoodId(neighborhoodId: string): Promise<Hotel[]>;
   getRecommendations(input: QuestionnaireInput): Promise<Recommendation[]>;
   updateNeighborhoodDescription(id: string, description: string): Promise<void>;
+  
+  // Favorites operations (userId is string for Replit Auth)
+  getFavoritesByUserId(userId: string): Promise<Favorite[]>;
+  addFavorite(favorite: InsertFavorite): Promise<Favorite>;
+  removeFavorite(userId: string, neighborhoodId: string): Promise<void>;
+  isFavorite(userId: string, neighborhoodId: string): Promise<boolean>;
 }
 
 const cities: City[] = [
@@ -559,6 +570,29 @@ export class MemStorage implements IStorage {
   private cities: City[] = cities;
   private neighborhoods: Neighborhood[] = neighborhoods;
   private hotels: Hotel[] = hotels;
+
+  // Favorites operations - use database
+  async getFavoritesByUserId(userId: string): Promise<Favorite[]> {
+    return db.select().from(favorites).where(eq(favorites.userId, userId));
+  }
+
+  async addFavorite(favorite: InsertFavorite): Promise<Favorite> {
+    const [newFavorite] = await db.insert(favorites).values(favorite).returning();
+    return newFavorite;
+  }
+
+  async removeFavorite(userId: string, neighborhoodId: string): Promise<void> {
+    await db.delete(favorites).where(
+      and(eq(favorites.userId, userId), eq(favorites.neighborhoodId, neighborhoodId))
+    );
+  }
+
+  async isFavorite(userId: string, neighborhoodId: string): Promise<boolean> {
+    const [favorite] = await db.select().from(favorites).where(
+      and(eq(favorites.userId, userId), eq(favorites.neighborhoodId, neighborhoodId))
+    );
+    return !!favorite;
+  }
 
   async getCities(): Promise<City[]> {
     return this.cities;

@@ -1,6 +1,7 @@
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { ScoreBar } from "@/components/score-bar";
+import { NeighborhoodComparisonModal } from "@/components/neighborhood-comparison-modal";
 import type { Neighborhood } from "@shared/schema";
 
 interface NeighborhoodComparisonProps {
@@ -17,9 +18,10 @@ export function NeighborhoodComparison({ neighborhoods }: NeighborhoodComparison
           <h2 className="text-3xl md:text-4xl font-semibold">
             Compare Neighborhoods
           </h2>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-muted-foreground mt-2 mb-4">
             See how different areas stack up against each other
           </p>
+          <NeighborhoodComparisonModal neighborhoods={neighborhoods} />
         </div>
 
         <ScrollArea className="w-full">

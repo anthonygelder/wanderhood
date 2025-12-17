@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { MapPin, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/user-menu";
 import { useState } from "react";
 import {
   Select,
@@ -69,6 +70,7 @@ export function Header({ cities, selectedCity, onCityChange, transparent = false
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <UserMenu />
           
           <Button
             variant="ghost"

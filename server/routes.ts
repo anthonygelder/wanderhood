@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { questionnaireInputSchema } from "@shared/schema";
 import OpenAI from "openai";
+import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -11,6 +12,10 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  
+  // Set up auth first (before other routes)
+  await setupAuth(app);
+  registerAuthRoutes(app);
   
   // Get all cities
   app.get("/api/cities", async (req, res) => {
@@ -98,6 +103,70 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error generating recommendations:", error);
       res.status(500).json({ error: "Failed to generate recommendations" });
+    }
+  });
+
+  // Favorites endpoints (protected)
+  app.get("/api/favorites", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const userFavorites = await storage.getFavoritesByUserId(userId);
+      res.json(userFavorites);
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+      res.status(500).json({ error: "Failed to fetch favorites" });
+    }
+  });
+
+  app.post("/api/favorites", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { neighborhoodId, cityId } = req.body;
+      
+      if (!neighborhoodId || !cityId) {
+        return res.status(400).json({ error: "neighborhoodId and cityId are required" });
+      }
+
+      const exists = await storage.isFavorite(userId, neighborhoodId);
+      if (exists) {
+        return res.status(400).json({ error: "Already in favorites" });
+      }
+
+      const favorite = await storage.addFavorite({
+        userId,
+        neighborhoodId,
+        cityId,
+      });
+      res.status(201).json(favorite);
+    } catch (error) {
+      console.error("Error adding favorite:", error);
+      res.status(500).json({ error: "Failed to add favorite" });
+    }
+  });
+
+  app.delete("/api/favorites/:neighborhoodId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { neighborhoodId } = req.params;
+      
+      await storage.removeFavorite(userId, neighborhoodId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      res.status(500).json({ error: "Failed to remove favorite" });
+    }
+  });
+
+  app.get("/api/favorites/:neighborhoodId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { neighborhoodId } = req.params;
+      
+      const isFav = await storage.isFavorite(userId, neighborhoodId);
+      res.json({ isFavorite: isFav });
+    } catch (error) {
+      console.error("Error checking favorite:", error);
+      res.status(500).json({ error: "Failed to check favorite" });
     }
   });
 

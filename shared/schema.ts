@@ -1,4 +1,29 @@
 import { z } from "zod";
+import { pgTable, serial, timestamp, varchar } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import { createInsertSchema } from "drizzle-zod";
+import { users } from "./models/auth";
+
+// Favorites table - linked to auth users
+export const favorites = pgTable("favorites", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+  neighborhoodId: varchar("neighborhood_id", { length: 255 }).notNull(),
+  cityId: varchar("city_id", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const favoritesRelations = relations(favorites, ({ one }) => ({
+  user: one(users, {
+    fields: [favorites.userId],
+    references: [users.id],
+  }),
+}));
+
+// Insert schema for favorites
+export const insertFavoriteSchema = createInsertSchema(favorites).omit({ id: true, createdAt: true });
+export type InsertFavorite = z.infer<typeof insertFavoriteSchema>;
+export type Favorite = typeof favorites.$inferSelect;
 
 // City schema
 export const citySchema = z.object({
@@ -122,3 +147,6 @@ export const citiesResponseSchema = z.array(citySchema);
 export const neighborhoodsResponseSchema = z.array(neighborhoodSchema);
 export const hotelsResponseSchema = z.array(hotelSchema);
 export const recommendationsResponseSchema = z.array(recommendationSchema);
+
+// Re-export auth models
+export * from "./models/auth";
