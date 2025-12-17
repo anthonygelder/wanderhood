@@ -5,8 +5,24 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScoreBar } from "@/components/score-bar";
-import { X, MapPin, Train, Footprints, Utensils, ExternalLink, Bus, Layers } from "lucide-react";
+import { X, MapPin, Train, Footprints, Utensils, ExternalLink, Bus, Ship, Layers, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 import type { Neighborhood, City } from "@shared/schema";
+
+interface TransitFilters {
+  rapidTransit: boolean;
+  bus: boolean;
+  ferry: boolean;
+  commuterRail: boolean;
+  intercity: boolean;
+}
 
 interface LeafletMapProps {
   city: City;
@@ -26,15 +42,33 @@ export function LeafletMap({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
-  const [showTransit, setShowTransit] = useState(true);
+  const labelsRef = useRef<L.Marker[]>([]);
+  const transitLayerRef = useRef<L.TileLayer | null>(null);
+  
+  const [transitFilters, setTransitFilters] = useState<TransitFilters>({
+    rapidTransit: true,
+    bus: false,
+    ferry: false,
+    commuterRail: true,
+    intercity: false,
+  });
   
   const selected = neighborhoods.find((n) => n.id === selectedNeighborhood);
+
+  const hasAnyTransitFilter = Object.values(transitFilters).some(v => v);
 
   const getScoreColor = (score: number): string => {
     if (score >= 85) return "#22c55e";
     if (score >= 70) return "#3b82f6";
     if (score >= 55) return "#f59e0b";
     return "#ef4444";
+  };
+
+  const toggleFilter = (filter: keyof TransitFilters) => {
+    setTransitFilters(prev => ({
+      ...prev,
+      [filter]: !prev[filter],
+    }));
   };
 
   useEffect(() => {
@@ -71,8 +105,30 @@ export function LeafletMap({
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
+    if (transitLayerRef.current) {
+      mapInstanceRef.current.removeLayer(transitLayerRef.current);
+      transitLayerRef.current = null;
+    }
+
+    if (hasAnyTransitFilter) {
+      transitLayerRef.current = L.tileLayer(
+        "https://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=6170aad10dfd42a38d4d8c709a536f38",
+        {
+          attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>',
+          maxZoom: 18,
+          opacity: 0.7,
+        }
+      ).addTo(mapInstanceRef.current);
+    }
+  }, [hasAnyTransitFilter]);
+
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
+    labelsRef.current.forEach((label) => label.remove());
+    labelsRef.current = [];
 
     neighborhoods.forEach((neighborhood) => {
       const avgScore = Math.round(
@@ -85,29 +141,29 @@ export function LeafletMap({
         className: "custom-marker",
         html: `
           <div style="
-            width: ${isSelected ? "56px" : "48px"};
-            height: ${isSelected ? "56px" : "48px"};
+            width: ${isSelected ? "40px" : "32px"};
+            height: ${isSelected ? "40px" : "32px"};
             background: ${color};
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 3px solid white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             cursor: pointer;
             transition: all 0.2s;
-            ${isSelected ? "transform: scale(1.1); box-shadow: 0 0 0 4px hsl(var(--primary)), 0 4px 12px rgba(0,0,0,0.3);" : ""}
+            ${isSelected ? "transform: scale(1.1); box-shadow: 0 0 0 3px hsl(var(--primary)), 0 2px 8px rgba(0,0,0,0.3);" : ""}
           ">
             <span style="
               color: white;
               font-weight: bold;
-              font-size: ${isSelected ? "16px" : "14px"};
+              font-size: ${isSelected ? "13px" : "11px"};
               text-shadow: 0 1px 2px rgba(0,0,0,0.3);
             ">${avgScore}</span>
           </div>
         `,
-        iconSize: [isSelected ? 56 : 48, isSelected ? 56 : 48],
-        iconAnchor: [isSelected ? 28 : 24, isSelected ? 28 : 24],
+        iconSize: [isSelected ? 40 : 32, isSelected ? 40 : 32],
+        iconAnchor: [isSelected ? 20 : 16, isSelected ? 20 : 16],
       });
 
       const marker = L.marker([neighborhood.coordinates.lat, neighborhood.coordinates.lng], { icon })
@@ -116,14 +172,35 @@ export function LeafletMap({
           onNeighborhoodSelect(selectedNeighborhood === neighborhood.id ? undefined : neighborhood.id);
         });
 
-      marker.bindTooltip(neighborhood.name, {
-        permanent: false,
-        direction: "top",
-        offset: [0, -24],
-        className: "leaflet-tooltip-custom",
+      markersRef.current.push(marker);
+
+      const labelIcon = L.divIcon({
+        className: "neighborhood-label",
+        html: `
+          <div style="
+            white-space: nowrap;
+            background: ${isSelected ? "hsl(var(--primary))" : "hsl(var(--background) / 0.95)"};
+            color: ${isSelected ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))"};
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            border: 1px solid ${isSelected ? "hsl(var(--primary))" : "hsl(var(--border))"};
+            pointer-events: none;
+          ">${neighborhood.name}</div>
+        `,
+        iconSize: [0, 0],
+        iconAnchor: [0, -20],
       });
 
-      markersRef.current.push(marker);
+      const label = L.marker([neighborhood.coordinates.lat, neighborhood.coordinates.lng], { 
+        icon: labelIcon,
+        interactive: false,
+        zIndexOffset: -1000,
+      }).addTo(mapInstanceRef.current!);
+
+      labelsRef.current.push(label);
     });
   }, [neighborhoods, selectedNeighborhood, onNeighborhoodSelect]);
 
@@ -140,6 +217,8 @@ export function LeafletMap({
     }
   }, [selectedNeighborhood, neighborhoods]);
 
+  const activeFilterCount = Object.values(transitFilters).filter(v => v).length;
+
   return (
     <section 
       className="relative min-h-[70vh] bg-muted/30" 
@@ -147,17 +226,9 @@ export function LeafletMap({
       data-testid="interactive-map"
     >
       <style>{`
-        .leaflet-tooltip-custom {
-          background: hsl(var(--background)) !important;
-          border: 1px solid hsl(var(--border)) !important;
-          border-radius: 6px !important;
-          padding: 4px 8px !important;
-          font-size: 12px !important;
-          font-weight: 600 !important;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
-        }
-        .leaflet-tooltip-custom::before {
-          border-top-color: hsl(var(--background)) !important;
+        .neighborhood-label {
+          background: transparent !important;
+          border: none !important;
         }
         .custom-marker {
           background: transparent !important;
@@ -189,41 +260,94 @@ export function LeafletMap({
                 Score Legend
               </p>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full" style={{ background: "#22c55e" }} />
+                <div className="w-3 h-3 rounded-full" style={{ background: "#22c55e" }} />
                 <span>85+ Excellent</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full" style={{ background: "#3b82f6" }} />
+                <div className="w-3 h-3 rounded-full" style={{ background: "#3b82f6" }} />
                 <span>70-84 Good</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full" style={{ background: "#f59e0b" }} />
+                <div className="w-3 h-3 rounded-full" style={{ background: "#f59e0b" }} />
                 <span>55-69 Moderate</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full" style={{ background: "#ef4444" }} />
+                <div className="w-3 h-3 rounded-full" style={{ background: "#ef4444" }} />
                 <span>&lt;55 Limited</span>
               </div>
             </div>
 
             <div className="absolute top-4 right-4 z-[1000]">
-              <Button 
-                variant={showTransit ? "default" : "outline"}
-                size="sm"
-                onClick={() => setShowTransit(!showTransit)}
-                className="shadow-lg"
-                data-testid="button-toggle-transit"
-              >
-                <Bus className="w-4 h-4 mr-2" />
-                Transit Lines
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant={hasAnyTransitFilter ? "default" : "outline"}
+                    size="sm"
+                    className="shadow-lg"
+                    data-testid="button-transit-filters"
+                  >
+                    <Layers className="w-4 h-4 mr-2" />
+                    Transit Layers
+                    {activeFilterCount > 0 && (
+                      <Badge variant="secondary" size="sm" className="ml-2">
+                        {activeFilterCount}
+                      </Badge>
+                    )}
+                    <ChevronDown className="w-4 h-4 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Transit Types</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuCheckboxItem
+                    checked={transitFilters.rapidTransit}
+                    onCheckedChange={() => toggleFilter("rapidTransit")}
+                    data-testid="filter-rapid-transit"
+                  >
+                    <Train className="w-4 h-4 mr-2" />
+                    Rapid Transit / Metro
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={transitFilters.commuterRail}
+                    onCheckedChange={() => toggleFilter("commuterRail")}
+                    data-testid="filter-commuter-rail"
+                  >
+                    <Train className="w-4 h-4 mr-2" />
+                    Commuter Rail
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={transitFilters.bus}
+                    onCheckedChange={() => toggleFilter("bus")}
+                    data-testid="filter-bus"
+                  >
+                    <Bus className="w-4 h-4 mr-2" />
+                    Bus Routes
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={transitFilters.ferry}
+                    onCheckedChange={() => toggleFilter("ferry")}
+                    data-testid="filter-ferry"
+                  >
+                    <Ship className="w-4 h-4 mr-2" />
+                    Ferry Routes
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={transitFilters.intercity}
+                    onCheckedChange={() => toggleFilter("intercity")}
+                    data-testid="filter-intercity"
+                  >
+                    <Train className="w-4 h-4 mr-2" />
+                    Intercity Transit
+                  </DropdownMenuCheckboxItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
           <div className="lg:w-[400px]">
             {selected ? (
               <Card className="p-6 animate-in slide-in-from-right-4 duration-300" data-testid="map-info-panel">
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex items-start justify-between gap-2 mb-4">
                   <div>
                     <h3 className="text-2xl font-serif font-semibold">{selected.name}</h3>
                     <div className="flex items-center gap-1 text-muted-foreground text-sm mt-1">
