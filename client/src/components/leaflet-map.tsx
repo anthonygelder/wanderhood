@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScoreBar } from "@/components/score-bar";
-import { X, MapPin, Train, Footprints, Utensils, ExternalLink, Bus, Ship, Layers, ChevronDown, Bike } from "lucide-react";
+import { X, MapPin, Train, Footprints, Utensils, ExternalLink, Bus, Ship, Layers, ChevronDown, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,8 +17,11 @@ import {
 import type { Neighborhood, City } from "@shared/schema";
 
 interface TransitFilters {
-  publicTransport: boolean;
-  cycling: boolean;
+  metro: boolean;
+  rail: boolean;
+  bus: boolean;
+  ferry: boolean;
+  tram: boolean;
 }
 
 interface LeafletMapProps {
@@ -28,6 +31,32 @@ interface LeafletMapProps {
   onNeighborhoodSelect: (id: string | undefined) => void;
   onViewHotels: (id: string) => void;
 }
+
+const ROUTE_TYPE_COLORS: Record<number, string> = {
+  0: "#00D4AA",
+  1: "#E31837",
+  2: "#0066CC",
+  3: "#FFB81C",
+  4: "#0077BE",
+  5: "#8B4513",
+  6: "#9370DB",
+  7: "#DC143C",
+  11: "#32CD32",
+  12: "#FF6347",
+};
+
+const ROUTE_TYPE_NAMES: Record<number, string> = {
+  0: "Tram/Light Rail",
+  1: "Metro/Subway",
+  2: "Rail",
+  3: "Bus",
+  4: "Ferry",
+  5: "Cable Car",
+  6: "Gondola",
+  7: "Funicular",
+  11: "Trolleybus",
+  12: "Monorail",
+};
 
 export function LeafletMap({
   city,
@@ -40,13 +69,18 @@ export function LeafletMap({
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const labelsRef = useRef<L.Marker[]>([]);
-  const transitLayerRef = useRef<L.TileLayer | null>(null);
-  const cyclingLayerRef = useRef<L.TileLayer | null>(null);
+  const transitLayerRef = useRef<L.GeoJSON | null>(null);
+  const stopsLayerRef = useRef<L.LayerGroup | null>(null);
   
   const [transitFilters, setTransitFilters] = useState<TransitFilters>({
-    publicTransport: true,
-    cycling: false,
+    metro: true,
+    rail: true,
+    bus: false,
+    ferry: true,
+    tram: true,
   });
+  const [isLoadingTransit, setIsLoadingTransit] = useState(false);
+  const [transitError, setTransitError] = useState<string | null>(null);
   
   const selected = neighborhoods.find((n) => n.id === selectedNeighborhood);
 
@@ -64,6 +98,84 @@ export function LeafletMap({
     }));
   };
 
+  const fetchTransitRoutes = useCallback(async () => {
+    if (!mapInstanceRef.current) return;
+
+    const activeTypes: number[] = [];
+    if (transitFilters.metro) activeTypes.push(1);
+    if (transitFilters.rail) activeTypes.push(2);
+    if (transitFilters.bus) activeTypes.push(3);
+    if (transitFilters.ferry) activeTypes.push(4);
+    if (transitFilters.tram) activeTypes.push(0, 5, 6, 7, 11, 12);
+
+    if (transitLayerRef.current) {
+      mapInstanceRef.current.removeLayer(transitLayerRef.current);
+      transitLayerRef.current = null;
+    }
+    if (stopsLayerRef.current) {
+      mapInstanceRef.current.removeLayer(stopsLayerRef.current);
+      stopsLayerRef.current = null;
+    }
+
+    if (activeTypes.length === 0) {
+      return;
+    }
+
+    setIsLoadingTransit(true);
+    setTransitError(null);
+
+    try {
+      const routeTypesParam = activeTypes.join(",");
+      const response = await fetch(
+        `/api/transit/routes?lat=${city.coordinates.lat}&lon=${city.coordinates.lng}&radius=8000&route_type=${routeTypesParam}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch transit data");
+      }
+
+      const geojsonData = await response.json();
+
+      if (geojsonData.features && geojsonData.features.length > 0) {
+        transitLayerRef.current = L.geoJSON(geojsonData, {
+          style: (feature) => {
+            const routeType = feature?.properties?.route_type ?? 3;
+            const routeColor = feature?.properties?.route_color 
+              ? `#${feature.properties.route_color}` 
+              : ROUTE_TYPE_COLORS[routeType] || "#888888";
+            
+            return {
+              color: routeColor,
+              weight: routeType === 1 || routeType === 2 ? 4 : 3,
+              opacity: 0.85,
+              lineCap: "round",
+              lineJoin: "round",
+            };
+          },
+          onEachFeature: (feature, layer) => {
+            const props = feature.properties;
+            const routeType = ROUTE_TYPE_NAMES[props?.route_type] || "Transit";
+            const routeName = props?.route_long_name || props?.route_short_name || "Unknown Route";
+            const agencyName = props?.agency?.agency_name || "";
+            
+            layer.bindPopup(`
+              <div style="min-width: 150px;">
+                <strong>${routeName}</strong><br/>
+                <span style="color: #666; font-size: 12px;">${routeType}</span>
+                ${agencyName ? `<br/><span style="color: #888; font-size: 11px;">${agencyName}</span>` : ""}
+              </div>
+            `);
+          },
+        }).addTo(mapInstanceRef.current);
+      }
+    } catch (error) {
+      console.error("Error fetching transit routes:", error);
+      setTransitError("Could not load transit data for this city");
+    } finally {
+      setIsLoadingTransit(false);
+    }
+  }, [city.coordinates.lat, city.coordinates.lng, transitFilters]);
+
   useEffect(() => {
     if (!mapRef.current) return;
 
@@ -76,7 +188,7 @@ export function LeafletMap({
       });
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | Transit data from <a href="https://transit.land">Transitland</a>',
         maxZoom: 18,
       }).addTo(mapInstanceRef.current);
     }
@@ -91,49 +203,12 @@ export function LeafletMap({
 
   useEffect(() => {
     if (!mapInstanceRef.current) return;
-    
     mapInstanceRef.current.setView([city.coordinates.lat, city.coordinates.lng], 12);
   }, [city.coordinates.lat, city.coordinates.lng]);
 
   useEffect(() => {
-    if (!mapInstanceRef.current) return;
-
-    if (transitLayerRef.current) {
-      mapInstanceRef.current.removeLayer(transitLayerRef.current);
-      transitLayerRef.current = null;
-    }
-
-    if (transitFilters.publicTransport) {
-      transitLayerRef.current = L.tileLayer(
-        "https://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=6170aad10dfd42a38d4d8c709a536f38",
-        {
-          attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>',
-          maxZoom: 18,
-          opacity: 0.7,
-        }
-      ).addTo(mapInstanceRef.current);
-    }
-  }, [transitFilters.publicTransport]);
-
-  useEffect(() => {
-    if (!mapInstanceRef.current) return;
-
-    if (cyclingLayerRef.current) {
-      mapInstanceRef.current.removeLayer(cyclingLayerRef.current);
-      cyclingLayerRef.current = null;
-    }
-
-    if (transitFilters.cycling) {
-      cyclingLayerRef.current = L.tileLayer(
-        "https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=6170aad10dfd42a38d4d8c709a536f38",
-        {
-          attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>',
-          maxZoom: 18,
-          opacity: 0.7,
-        }
-      ).addTo(mapInstanceRef.current);
-    }
-  }, [transitFilters.cycling]);
+    fetchTransitRoutes();
+  }, [fetchTransitRoutes]);
 
   useEffect(() => {
     if (!mapInstanceRef.current) return;
@@ -179,11 +254,14 @@ export function LeafletMap({
         iconAnchor: [isSelected ? 20 : 16, isSelected ? 20 : 16],
       });
 
-      const marker = L.marker([neighborhood.coordinates.lat, neighborhood.coordinates.lng], { icon })
-        .addTo(mapInstanceRef.current!)
-        .on("click", () => {
-          onNeighborhoodSelect(selectedNeighborhood === neighborhood.id ? undefined : neighborhood.id);
-        });
+      const marker = L.marker([neighborhood.coordinates.lat, neighborhood.coordinates.lng], {
+        icon,
+        zIndexOffset: isSelected ? 1000 : 0,
+      }).addTo(mapInstanceRef.current!);
+
+      marker.on("click", () => {
+        onNeighborhoodSelect(neighborhood.id);
+      });
 
       markersRef.current.push(marker);
 
@@ -191,26 +269,28 @@ export function LeafletMap({
         className: "neighborhood-label",
         html: `
           <div style="
-            white-space: nowrap;
-            background: ${isSelected ? "hsl(var(--primary))" : "hsl(var(--background) / 0.95)"};
-            color: ${isSelected ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))"};
-            padding: 2px 6px;
+            background: hsl(var(--background) / 0.95);
+            color: hsl(var(--foreground));
+            padding: 4px 8px;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
+            white-space: nowrap;
             box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-            border: 1px solid ${isSelected ? "hsl(var(--primary))" : "hsl(var(--border))"};
+            border: 1px solid hsl(var(--border));
             pointer-events: none;
-          ">${neighborhood.name}</div>
+          ">
+            ${neighborhood.name}
+          </div>
         `,
         iconSize: [0, 0],
-        iconAnchor: [0, -20],
+        iconAnchor: [0, -25],
       });
 
-      const label = L.marker([neighborhood.coordinates.lat, neighborhood.coordinates.lng], { 
+      const label = L.marker([neighborhood.coordinates.lat, neighborhood.coordinates.lng], {
         icon: labelIcon,
+        zIndexOffset: isSelected ? 999 : -1,
         interactive: false,
-        zIndexOffset: -1000,
       }).addTo(mapInstanceRef.current!);
 
       labelsRef.current.push(label);
@@ -218,216 +298,175 @@ export function LeafletMap({
   }, [neighborhoods, selectedNeighborhood, onNeighborhoodSelect]);
 
   useEffect(() => {
-    if (selectedNeighborhood && mapInstanceRef.current) {
-      const neighborhood = neighborhoods.find((n) => n.id === selectedNeighborhood);
-      if (neighborhood) {
-        mapInstanceRef.current.flyTo(
-          [neighborhood.coordinates.lat, neighborhood.coordinates.lng],
-          14,
-          { duration: 0.5 }
-        );
-      }
+    if (selected && mapInstanceRef.current) {
+      mapInstanceRef.current.flyTo(
+        [selected.coordinates.lat, selected.coordinates.lng],
+        14,
+        { duration: 0.5 }
+      );
     }
   }, [selectedNeighborhood, neighborhoods]);
 
   const activeFilterCount = Object.values(transitFilters).filter(v => v).length;
 
   return (
-    <section 
-      className="relative min-h-[70vh] bg-muted/30" 
-      id="map-section"
-      data-testid="interactive-map"
-    >
-      <style>{`
-        .neighborhood-label {
-          background: transparent !important;
-          border: none !important;
-        }
-        .custom-marker {
-          background: transparent !important;
-          border: none !important;
-        }
-      `}</style>
+    <div className="relative h-full w-full">
+      <div ref={mapRef} className="h-full w-full rounded-lg" />
+      
+      {selected && (
+        <Card className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 p-4 z-[1000] shadow-lg">
+          <div className="flex justify-between items-start gap-2 mb-3">
+            <div>
+              <h3 className="font-semibold text-lg">{selected.name}</h3>
+              <p className="text-sm text-muted-foreground">{city.name}</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onNeighborhoodSelect(undefined)}
+              data-testid="button-close-popup"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-semibold">
-            Explore {city.name} Neighborhoods
-          </h2>
-          <p className="text-muted-foreground mt-2">
-            Click on a neighborhood to see walkability and transit scores
-          </p>
+          <div className="flex flex-wrap gap-1 mb-3">
+            {selected.vibe.slice(0, 3).map((v) => (
+              <Badge key={v} variant="secondary" size="sm">
+                {v}
+              </Badge>
+            ))}
+          </div>
+
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center gap-2">
+              <Footprints className="w-4 h-4 text-muted-foreground" />
+              <div className="flex-1">
+                <ScoreBar score={selected.scores.walkability} label="Walk" size="sm" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Train className="w-4 h-4 text-muted-foreground" />
+              <div className="flex-1">
+                <ScoreBar score={selected.scores.transitConnectivity} label="Transit" size="sm" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Utensils className="w-4 h-4 text-muted-foreground" />
+              <div className="flex-1">
+                <ScoreBar score={selected.scores.foodCoffeeDensity} label="Food" size="sm" />
+              </div>
+            </div>
+          </div>
+
+          <Button
+            className="w-full"
+            onClick={() => onViewHotels(selected.id)}
+            data-testid="button-view-hotels"
+          >
+            <MapPin className="w-4 h-4 mr-2" />
+            View Hotels
+            <ExternalLink className="w-3 h-3 ml-2" />
+          </Button>
+        </Card>
+      )}
+
+      <div className="absolute top-4 left-4 right-4 z-[1000] flex justify-between items-start gap-2 pointer-events-none">
+        <div className="pointer-events-auto">
+          {isLoadingTransit && (
+            <Badge variant="secondary" className="shadow-md">
+              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+              Loading transit...
+            </Badge>
+          )}
+          {transitError && (
+            <Badge variant="outline" className="shadow-md bg-background">
+              {transitError}
+            </Badge>
+          )}
         </div>
-
-        <div className="flex flex-col lg:flex-row gap-6">
-          <div className="flex-1 relative">
-            <div 
-              ref={mapRef}
-              className="w-full h-[500px] rounded-md overflow-hidden shadow-lg"
-              data-testid="map-container"
-            />
-            
-            <div className="absolute bottom-4 left-4 z-[1000] bg-background/95 backdrop-blur-sm rounded-md p-3 text-xs space-y-1">
-              <p className="font-semibold mb-2 flex items-center gap-2">
-                <Layers className="w-4 h-4" />
-                Score Legend
-              </p>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ background: "#22c55e" }} />
-                <span>85+ Excellent</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ background: "#3b82f6" }} />
-                <span>70-84 Good</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ background: "#f59e0b" }} />
-                <span>55-69 Moderate</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ background: "#ef4444" }} />
-                <span>&lt;55 Limited</span>
-              </div>
-            </div>
-
-            <div className="absolute top-4 right-4 z-[1000]">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant={activeFilterCount > 0 ? "default" : "outline"}
-                    size="sm"
-                    className="shadow-lg"
-                    data-testid="button-transit-filters"
-                  >
-                    <Layers className="w-4 h-4 mr-2" />
-                    Transit Layers
-                    {activeFilterCount > 0 && (
-                      <Badge variant="secondary" size="sm" className="ml-2">
-                        {activeFilterCount}
-                      </Badge>
-                    )}
-                    <ChevronDown className="w-4 h-4 ml-1" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 z-[1100]">
-                  <DropdownMenuLabel>Map Layers</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuCheckboxItem
-                    checked={transitFilters.publicTransport}
-                    onCheckedChange={() => toggleFilter("publicTransport")}
-                    data-testid="filter-public-transport"
-                  >
-                    <Train className="w-4 h-4 mr-2" />
-                    Public Transport (Metro, Bus, Tram)
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem
-                    checked={transitFilters.cycling}
-                    onCheckedChange={() => toggleFilter("cycling")}
-                    data-testid="filter-cycling"
-                  >
-                    <Bike className="w-4 h-4 mr-2" />
-                    Cycling Infrastructure
-                  </DropdownMenuCheckboxItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-
-          <div className="lg:w-[400px]">
-            {selected ? (
-              <Card className="p-6 animate-in slide-in-from-right-4 duration-300" data-testid="map-info-panel">
-                <div className="flex items-start justify-between gap-2 mb-4">
-                  <div>
-                    <h3 className="text-2xl font-serif font-semibold">{selected.name}</h3>
-                    <div className="flex items-center gap-1 text-muted-foreground text-sm mt-1">
-                      <MapPin className="w-3 h-3" />
-                      <span>{selected.highlights[0]}</span>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onNeighborhoodSelect(undefined)}
-                    data-testid="button-close-info-panel"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                <div 
-                  className="aspect-video rounded-md bg-cover bg-center mb-4"
-                  style={{ backgroundImage: `url(${selected.heroImage})` }}
-                />
-
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {selected.vibe.map((v) => (
-                    <Badge key={v} variant="secondary" size="sm">
-                      {v}
-                    </Badge>
-                  ))}
-                </div>
-
-                <div className="space-y-3 mb-4">
-                  <ScoreBar 
-                    label="Walkability" 
-                    score={selected.scores.walkability} 
-                    icon={<Footprints className="w-4 h-4" />}
-                    size="sm"
-                  />
-                  <ScoreBar 
-                    label="Transit" 
-                    score={selected.scores.transitConnectivity} 
-                    icon={<Train className="w-4 h-4" />}
-                    size="sm"
-                  />
-                  <ScoreBar 
-                    label="Food & Coffee" 
-                    score={selected.scores.foodCoffeeDensity} 
-                    icon={<Utensils className="w-4 h-4" />}
-                    size="sm"
-                  />
-                </div>
-
-                <p className="text-sm text-muted-foreground mb-4">
-                  {selected.description}
-                </p>
-
-                <div className="space-y-2 mb-4">
-                  <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                    <Train className="w-3 h-3" />
-                    Transit Hubs:
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    {selected.transitHubs.map((hub) => (
-                      <Badge key={hub} variant="outline" size="sm">
-                        {hub}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <Button 
-                  className="w-full"
-                  onClick={() => onViewHotels(selected.id)}
-                  data-testid="button-map-view-hotels"
-                >
-                  View Hotels
-                  <ExternalLink className="w-4 h-4 ml-2" />
-                </Button>
-              </Card>
-            ) : (
-              <Card className="p-6 flex flex-col items-center justify-center min-h-[400px] text-center">
-                <MapPin className="w-12 h-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Select a Neighborhood</h3>
-                <p className="text-sm text-muted-foreground">
-                  Click on any neighborhood marker on the map to see detailed scores, 
-                  transit information, and available hotels.
-                </p>
-              </Card>
-            )}
-          </div>
+        
+        <div className="pointer-events-auto">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant={activeFilterCount > 0 ? "default" : "outline"}
+                size="sm"
+                className="shadow-lg"
+                data-testid="button-transit-filters"
+              >
+                <Layers className="w-4 h-4 mr-2" />
+                Transit
+                {activeFilterCount > 0 && (
+                  <Badge variant="secondary" size="sm" className="ml-2">
+                    {activeFilterCount}
+                  </Badge>
+                )}
+                <ChevronDown className="w-4 h-4 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 z-[1100]">
+              <DropdownMenuLabel>Transit Types (Transitland)</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuCheckboxItem
+                checked={transitFilters.metro}
+                onCheckedChange={() => toggleFilter("metro")}
+                data-testid="filter-metro"
+              >
+                <div className="w-3 h-3 rounded-full mr-2" style={{ background: ROUTE_TYPE_COLORS[1] }} />
+                Metro / Subway
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={transitFilters.rail}
+                onCheckedChange={() => toggleFilter("rail")}
+                data-testid="filter-rail"
+              >
+                <div className="w-3 h-3 rounded-full mr-2" style={{ background: ROUTE_TYPE_COLORS[2] }} />
+                Rail / Commuter
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={transitFilters.tram}
+                onCheckedChange={() => toggleFilter("tram")}
+                data-testid="filter-tram"
+              >
+                <div className="w-3 h-3 rounded-full mr-2" style={{ background: ROUTE_TYPE_COLORS[0] }} />
+                Tram / Light Rail
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={transitFilters.bus}
+                onCheckedChange={() => toggleFilter("bus")}
+                data-testid="filter-bus"
+              >
+                <div className="w-3 h-3 rounded-full mr-2" style={{ background: ROUTE_TYPE_COLORS[3] }} />
+                Bus Routes
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={transitFilters.ferry}
+                onCheckedChange={() => toggleFilter("ferry")}
+                data-testid="filter-ferry"
+              >
+                <div className="w-3 h-3 rounded-full mr-2" style={{ background: ROUTE_TYPE_COLORS[4] }} />
+                Ferry
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
-    </section>
+
+      <div className="absolute bottom-4 right-4 z-[1000] flex flex-col gap-1">
+        <Badge variant="outline" className="text-xs bg-background/90">
+          <div className="w-2 h-2 rounded-full mr-1" style={{ background: "#22c55e" }} />
+          85+ Excellent
+        </Badge>
+        <Badge variant="outline" className="text-xs bg-background/90">
+          <div className="w-2 h-2 rounded-full mr-1" style={{ background: "#3b82f6" }} />
+          70+ Good
+        </Badge>
+        <Badge variant="outline" className="text-xs bg-background/90">
+          <div className="w-2 h-2 rounded-full mr-1" style={{ background: "#f59e0b" }} />
+          55+ Fair
+        </Badge>
+      </div>
+    </div>
   );
 }

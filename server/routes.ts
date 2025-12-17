@@ -170,6 +170,74 @@ export async function registerRoutes(
     }
   });
 
+  // Transitland API - fetch transit routes for a bounding box
+  app.get("/api/transit/routes", async (req, res) => {
+    try {
+      const { lat, lon, radius = 5000, route_type } = req.query;
+      
+      if (!lat || !lon) {
+        return res.status(400).json({ error: "lat and lon are required" });
+      }
+
+      const apiKey = process.env.TRANSITLAND_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ error: "Transit API not configured" });
+      }
+
+      // Build the query URL for Transitland
+      let url = `https://transit.land/api/v2/rest/routes.geojson?lat=${lat}&lon=${lon}&radius=${radius}&include_geometry=true&limit=100&apikey=${apiKey}`;
+      
+      // Filter by route type if specified (1=Metro, 2=Rail, 3=Bus, 4=Ferry, 5=Cable car, 6=Gondola, 7=Funicular, 11=Trolleybus, 12=Monorail)
+      if (route_type) {
+        url += `&route_types=${route_type}`;
+      }
+
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        console.error("Transitland API error:", response.status, await response.text());
+        return res.status(response.status).json({ error: "Failed to fetch transit data" });
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching transit routes:", error);
+      res.status(500).json({ error: "Failed to fetch transit routes" });
+    }
+  });
+
+  // Transitland API - fetch stops for a bounding box
+  app.get("/api/transit/stops", async (req, res) => {
+    try {
+      const { lat, lon, radius = 2000 } = req.query;
+      
+      if (!lat || !lon) {
+        return res.status(400).json({ error: "lat and lon are required" });
+      }
+
+      const apiKey = process.env.TRANSITLAND_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ error: "Transit API not configured" });
+      }
+
+      const url = `https://transit.land/api/v2/rest/stops.geojson?lat=${lat}&lon=${lon}&radius=${radius}&limit=200&apikey=${apiKey}`;
+
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        console.error("Transitland API error:", response.status, await response.text());
+        return res.status(response.status).json({ error: "Failed to fetch transit stops" });
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching transit stops:", error);
+      res.status(500).json({ error: "Failed to fetch transit stops" });
+    }
+  });
+
   return httpServer;
 }
 
