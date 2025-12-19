@@ -49,7 +49,7 @@ export function Header({ cities, selectedCity, onCityChange, transparent = false
             <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
               <MapPin className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-semibold text-lg">StayMap</span>
+            <span className="font-semibold text-lg">Wanderhood</span>
           </div>
         </Link>
 

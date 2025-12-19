@@ -1,7 +1,7 @@
-# StayMap - Car-Free Travel Neighborhood Finder
+# Wanderhood - Car-Free Travel Neighborhood Finder
 
 ## Overview
-StayMap is an interactive map and recommendation engine that helps travelers find the perfect car-free neighborhood for their trip. It answers the #1 trip-planning question: "What neighborhood should I stay in, based on how I like to travel?"
+Wanderhood is an interactive map and recommendation engine that helps travelers find the perfect car-free neighborhood for their trip. It answers the #1 trip-planning question: "What neighborhood should I stay in, based on how I like to travel?"
 
 ## Current State
 MVP implementation complete with:

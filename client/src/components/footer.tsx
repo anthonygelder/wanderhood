@@ -33,7 +33,7 @@ export function Footer() {
               <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
                 <MapPin className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="font-semibold text-lg">StayMap</span>
+              <span className="font-semibold text-lg">Wanderhood</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Find the perfect car-free neighborhood for your next adventure. 
@@ -60,7 +60,7 @@ export function Footer() {
                 <Instagram className="w-5 h-5" />
               </a>
               <a 
-                href="mailto:hello@staymap.com"
+                href="mailto:hello@wanderhood.com"
                 className="text-muted-foreground hover-elevate p-2 rounded-md"
                 data-testid="link-email"
               >
@@ -118,7 +118,7 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-xs text-muted-foreground">
-              © {new Date().getFullYear()} StayMap. All rights reserved.
+              © {new Date().getFullYear()} Wanderhood. All rights reserved.
             </p>
             <p className="text-xs text-muted-foreground text-center md:text-right">
               Affiliate Disclosure: We may earn commissions from hotel bookings made through our links.

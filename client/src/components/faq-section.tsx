@@ -24,7 +24,7 @@ const faqs = [
   },
   {
     question: "How do hotel affiliate links work?",
-    answer: "When you click on a hotel link and make a booking, we may earn a small commission at no extra cost to you. This helps us keep StayMap free and continue providing neighborhood recommendations."
+    answer: "When you click on a hotel link and make a booking, we may earn a small commission at no extra cost to you. This helps us keep Wanderhood free and continue providing neighborhood recommendations."
   },
   {
     question: "Can I trust the AI-generated descriptions?",
@@ -41,7 +41,7 @@ export function FAQSection() {
             Frequently Asked Questions
           </h2>
           <p className="text-muted-foreground mt-2">
-            Everything you need to know about using StayMap
+            Everything you need to know about using Wanderhood
           </p>
         </div>
 

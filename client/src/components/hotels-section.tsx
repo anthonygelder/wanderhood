@@ -130,7 +130,7 @@ export function HotelsSection({ cityId, neighborhoods, selectedNeighborhood }: H
         )}
 
         <p className="text-xs text-muted-foreground text-center mt-8">
-          We may earn a commission when you book through our links. This helps us keep StayMap free.
+          We may earn a commission when you book through our links. This helps us keep Wanderhood free.
         </p>
       </div>
     </section>
