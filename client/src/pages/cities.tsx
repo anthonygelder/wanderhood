@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { CityCard } from "@/components/city-card";
@@ -12,8 +13,17 @@ export default function CitiesPage() {
 
   return (
     <div className="min-h-screen bg-background" data-testid="page-cities">
+      <Helmet>
+        <title>Explore Car-Free Cities - Wanderhood</title>
+        <meta name="description" content="Browse walkable cities around the world. Find neighborhoods with great transit, food, and local character in Tokyo, Lisbon, Barcelona, and more." />
+        <link rel="canonical" href="https://wanderhood.com/cities" />
+        <meta property="og:title" content="Explore Car-Free Cities - Wanderhood" />
+        <meta property="og:description" content="Browse walkable cities around the world with great transit, food, and local character." />
+        <meta property="og:url" content="https://wanderhood.com/cities" />
+        <meta property="og:type" content="website" />
+      </Helmet>
       <Header cities={cities} />
-      
+
       <section className="py-16 md:py-24">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-12">
@@ -21,7 +31,7 @@ export default function CitiesPage() {
               Explore Car-Free Cities
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Discover walkable neighborhoods in cities around the world. 
+              Discover walkable neighborhoods in cities around the world.
               Each destination is hand-picked for its transit options and pedestrian-friendly areas.
             </p>
           </div>

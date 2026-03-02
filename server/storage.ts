@@ -12,6 +12,15 @@ import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 import { cities, neighborhoods, hotels } from "./data/cities";
 
+const AWIN_AFFILIATE_ID = "2700154";
+const AWIN_MID = "6776";
+
+function buildHotelBookingUrl(hotelName: string, city: City): string {
+  const ss = `${hotelName}, ${city.name}`;
+  const destinationUrl = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(ss)}`;
+  return `https://www.awin1.com/cread.php?awinmid=${AWIN_MID}&awinaffid=${AWIN_AFFILIATE_ID}&ued=${encodeURIComponent(destinationUrl)}`;
+}
+
 export interface IStorage {
   getCities(): Promise<City[]>;
   getCityBySlug(slug: string): Promise<City | undefined>;
@@ -83,7 +92,20 @@ export class MemStorage implements IStorage {
   }
 
   async getHotelsByNeighborhoodId(neighborhoodId: string): Promise<Hotel[]> {
-    return this.hotels.filter((h) => h.neighborhoodId === neighborhoodId);
+    const neighborhood = this.neighborhoods.find((n) => n.id === neighborhoodId);
+    const city = neighborhood
+      ? this.cities.find((c) => c.id === neighborhood.cityId)
+      : undefined;
+
+    return this.hotels
+      .filter((h) => h.neighborhoodId === neighborhoodId)
+      .map((h) => ({
+        ...h,
+        affiliateUrl:
+          h.affiliateUrl || (city
+            ? buildHotelBookingUrl(h.name, city)
+            : `https://www.awin1.com/cread.php?awinmid=${AWIN_MID}&awinaffid=${AWIN_AFFILIATE_ID}`),
+      }));
   }
 
   async updateNeighborhoodDescription(id: string, description: string): Promise<void> {

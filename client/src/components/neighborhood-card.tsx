@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScoreBar } from "@/components/score-bar";
-import { MapPin, ExternalLink, Footprints, Train, Shield, Utensils, Music, Users } from "lucide-react";
+import { MapPin, ExternalLink, Footprints, Train, Shield, Utensils, Music, Users, Hotel } from "lucide-react";
 import type { Recommendation } from "@shared/schema";
 
 interface NeighborhoodCardProps {
@@ -22,16 +22,16 @@ export function NeighborhoodCard({ recommendation, onViewHotels, onExploreMap }:
   };
 
   return (
-    <Card 
+    <Card
       className="overflow-visible group"
       data-testid={`card-neighborhood-${neighborhood.slug}`}
     >
       <div className="relative">
-        <div 
+        <div
           className="aspect-video bg-cover bg-center rounded-t-md"
           style={{ backgroundImage: `url(${neighborhood.heroImage})` }}
         />
-        <Badge 
+        <Badge
           className={`absolute top-3 left-3 ${rankBadgeColors[rank] || "bg-primary"}`}
           data-testid={`badge-rank-${rank}`}
         >
@@ -66,6 +66,17 @@ export function NeighborhoodCard({ recommendation, onViewHotels, onExploreMap }:
           ))}
         </div>
 
+        {neighborhood.transitHubs.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {neighborhood.transitHubs.slice(0, 3).map((hub) => (
+              <Badge key={hub} variant="outline" size="sm" className="text-xs">
+                <Train className="w-3 h-3 mr-1" />
+                {hub}
+              </Badge>
+            ))}
+          </div>
+        )}
+
         <div className="space-y-3">
           <ScoreBar label="Walkability" score={scores.walkability} icon={<Footprints className="w-4 h-4" />} size="sm" />
           <ScoreBar label="Transit" score={scores.transitConnectivity} icon={<Train className="w-4 h-4" />} size="sm" />
@@ -83,21 +94,28 @@ export function NeighborhoodCard({ recommendation, onViewHotels, onExploreMap }:
 
         {matchReasons.length > 0 && (
           <div className="bg-muted/50 rounded-md p-3">
-            <p className="text-xs font-medium text-muted-foreground mb-1">Why this matches you:</p>
-            <p className="text-sm">{matchReasons.slice(0, 2).join(" ")}</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">Why this matches you:</p>
+            <div className="flex flex-wrap gap-1.5">
+              {matchReasons.slice(0, 4).map((reason, i) => (
+                <Badge key={i} variant="secondary" size="sm" className="text-xs">
+                  {reason}
+                </Badge>
+              ))}
+            </div>
           </div>
         )}
 
         <div className="flex flex-col gap-2 pt-2">
-          <Button 
+          <Button
             onClick={() => onViewHotels(neighborhood.id)}
             className="w-full"
-            data-testid={`button-view-hotels-${neighborhood.slug}`}
+            data-testid={`button-find-hotels-${neighborhood.slug}`}
           >
-            View Hotels
+            <Hotel className="w-4 h-4 mr-2" />
+            Find Hotels
             <ExternalLink className="w-4 h-4 ml-2" />
           </Button>
-          <Button 
+          <Button
             variant="outline"
             onClick={() => onExploreMap(neighborhood.id)}
             className="w-full"

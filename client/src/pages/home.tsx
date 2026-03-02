@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { HeroSection } from "@/components/hero-section";
@@ -31,7 +32,7 @@ export default function Home() {
     onSuccess: async (data) => {
       setRecommendations(data);
       setViewState("results");
-      
+
       const hotelData: Record<string, Hotel[]> = {};
       for (const rec of data) {
         try {
@@ -78,9 +79,13 @@ export default function Home() {
   if (viewState === "results") {
     const cityId = recommendations[0]?.neighborhood.cityId;
     const selectedCity = cities.find(c => c.id === cityId);
-    
+
     return (
       <div className="min-h-screen bg-background">
+        <Helmet>
+          <title>Your Recommendations - Wanderhood</title>
+          <meta name="description" content="Your personalized car-free neighborhood recommendations based on your travel preferences." />
+        </Helmet>
         <Header cities={cities} />
         <RecommendationsSection
           recommendations={recommendations}
@@ -111,6 +116,18 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background" data-testid="page-home">
+      <Helmet>
+        <title>Wanderhood - Find Your Perfect Car-Free Neighborhood</title>
+        <meta name="description" content="Discover the best walkable neighborhoods for your next trip. Wanderhood helps travelers find car-free areas with great transit, food, and local vibes." />
+        <link rel="canonical" href="https://wanderhood.com/" />
+        <meta property="og:title" content="Wanderhood - Car-Free Travel Made Easy" />
+        <meta property="og:description" content="Find walkable neighborhoods with great transit, food, and local character." />
+        <meta property="og:url" content="https://wanderhood.com/" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Wanderhood - Car-Free Travel Made Easy" />
+        <meta name="twitter:description" content="Find walkable neighborhoods with great transit, food, and local character." />
+      </Helmet>
       <Header cities={cities} />
       <HeroSection onStartQuestionnaire={handleStartQuestionnaire} />
       <FeaturesSection />

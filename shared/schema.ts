@@ -87,7 +87,7 @@ export const hotelSchema = z.object({
   rating: z.number().min(0).max(10),
   priceRange: z.string(),
   image: z.string(),
-  affiliateUrl: z.string(),
+  affiliateUrl: z.string().optional(),
   description: z.string(),
   distanceToTransit: z.string(),
   amenities: z.array(z.string()),

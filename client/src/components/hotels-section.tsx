@@ -117,7 +117,7 @@ export function HotelsSection({ cityId, neighborhoods, selectedNeighborhood }: H
 
                   <Button 
                     className="w-full"
-                    onClick={() => window.open(hotel.affiliateUrl || `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(hotel.name)}&aid=2700154`, "_blank")}
+                    onClick={() => window.open(hotel.affiliateUrl, "_blank")}
                     data-testid={`button-book-${hotel.id}`}
                   >
                     Book on Booking.com

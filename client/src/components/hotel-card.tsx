@@ -38,7 +38,7 @@ export function HotelCard({ hotel }: HotelCardProps) {
               asChild
               data-testid={`button-book-hotel-${hotel.id}`}
             >
-              <a href={hotel.affiliateUrl} target="_blank" rel="noopener noreferrer">
+              <a href={hotel.affiliateUrl || "#"} target="_blank" rel="noopener noreferrer">
                 Book Now
                 <ExternalLink className="w-3 h-3 ml-1" />
               </a>

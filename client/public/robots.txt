@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /favorites
+
+Sitemap: https://wanderhood.com/sitemap.xml

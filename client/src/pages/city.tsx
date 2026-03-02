@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
+import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { CityHero } from "@/components/city-hero";
 import { Questionnaire } from "@/components/questionnaire";
 import { RecommendationsSection } from "@/components/recommendations-section";
 import { NeighborhoodComparison } from "@/components/neighborhood-comparison";
-import { LeafletMap } from "@/components/leaflet-map";
+import { GoogleMap } from "@/components/google-map";
 import { HotelsSection } from "@/components/hotels-section";
 import { ResultsMapSection } from "@/components/results-map-section";
 import { FAQSection } from "@/components/faq-section";
@@ -56,7 +57,7 @@ export default function CityPage() {
     onSuccess: async (data) => {
       setRecommendations(data);
       setViewState("results");
-      
+
       const hotelData: Record<string, Hotel[]> = {};
       for (const rec of data) {
         try {
@@ -104,9 +105,12 @@ export default function CityPage() {
   if (viewState === "results") {
     const cityId = recommendations[0]?.neighborhood.cityId;
     const matchedCity = cities.find(c => c.id === cityId) || city;
-    
+
     return (
       <div className="min-h-screen bg-background">
+        <Helmet>
+          <title>Your Recommendations in {city?.name || "City"} - Wanderhood</title>
+        </Helmet>
         <Header cities={cities} />
         <RecommendationsSection
           recommendations={recommendations}
@@ -141,6 +145,9 @@ export default function CityPage() {
   if (!city) {
     return (
       <div className="min-h-screen bg-background">
+        <Helmet>
+          <title>City Not Found - Wanderhood</title>
+        </Helmet>
         <Header cities={cities} />
         <div className="min-h-[60vh] flex items-center justify-center">
           <div className="text-center">
@@ -163,18 +170,56 @@ export default function CityPage() {
     }
   };
 
+  const neighborhoodNames = neighborhoods.slice(0, 3).map(n => n.name).join(", ");
+
   return (
     <div className="min-h-screen bg-background" data-testid={`page-city-${slug}`}>
+      <Helmet>
+        <title>{city.name} Car-Free Travel Guide - Wanderhood</title>
+        <meta name="description" content={`Explore walkable neighborhoods in ${city.name}, ${city.country}. ${city.description}`} />
+        <link rel="canonical" href={`https://wanderhood.com/city/${city.slug}`} />
+        <meta property="og:title" content={`${city.name} Car-Free Travel Guide - Wanderhood`} />
+        <meta property="og:description" content={`Explore walkable neighborhoods in ${city.name}. ${city.description}`} />
+        <meta property="og:url" content={`https://wanderhood.com/city/${city.slug}`} />
+        <meta property="og:type" content="article" />
+        <meta property="og:image" content={city.heroImage} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "TouristDestination",
+            "name": `${city.name} - Car-Free Travel Guide`,
+            "description": city.description,
+            "url": `https://wanderhood.com/city/${city.slug}`,
+            "image": city.heroImage,
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": city.coordinates.lat,
+              "longitude": city.coordinates.lng,
+            },
+            "containedInPlace": {
+              "@type": "Country",
+              "name": city.country,
+            },
+            ...(neighborhoodNames ? {
+              "containsPlace": neighborhoods.slice(0, 5).map(n => ({
+                "@type": "TouristDestination",
+                "name": n.name,
+                "description": n.description,
+              })),
+            } : {}),
+          })}
+        </script>
+      </Helmet>
       <Header cities={cities} />
       <CityHero city={city} onStartQuestionnaire={handleStartQuestionnaire} />
-      <LeafletMap
+      <GoogleMap
         city={city}
         neighborhoods={neighborhoods}
         selectedNeighborhood={selectedNeighborhood}
         onNeighborhoodSelect={setSelectedNeighborhood}
         onViewHotels={handleMapViewHotels}
       />
-      <HotelsSection 
+      <HotelsSection
         cityId={city.id}
         neighborhoods={neighborhoods}
         selectedNeighborhood={selectedNeighborhood}
