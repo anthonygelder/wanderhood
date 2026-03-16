@@ -52,21 +52,25 @@ export class MemStorage implements IStorage {
   private hotels: Hotel[] = hotels;
 
   async getFavoritesByUserId(userId: string): Promise<Favorite[]> {
+    if (!db) return [];
     return db.select().from(favorites).where(eq(favorites.userId, userId));
   }
 
   async addFavorite(favorite: InsertFavorite): Promise<Favorite> {
+    if (!db) throw new Error("Database not configured");
     const [newFavorite] = await db.insert(favorites).values(favorite).returning();
     return newFavorite;
   }
 
   async removeFavorite(userId: string, neighborhoodId: string): Promise<void> {
+    if (!db) return;
     await db.delete(favorites).where(
       and(eq(favorites.userId, userId), eq(favorites.neighborhoodId, neighborhoodId))
     );
   }
 
   async isFavorite(userId: string, neighborhoodId: string): Promise<boolean> {
+    if (!db) return false;
     const [favorite] = await db.select().from(favorites).where(
       and(eq(favorites.userId, userId), eq(favorites.neighborhoodId, neighborhoodId))
     );
