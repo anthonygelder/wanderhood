@@ -14,6 +14,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("staymap-theme") as Theme;
       if (stored) return stored;
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) return "dark";
       return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     }
     return "light";

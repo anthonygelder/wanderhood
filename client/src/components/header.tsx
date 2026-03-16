@@ -5,7 +5,6 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { useTheme } from "@/lib/theme";
 import logoWordmarkDark from "@/assets/wanderhood-logo-header.svg";
 import logoWordmarkLight from "@/assets/wanderhood-logo-header-light.svg";
-import logoIcon from "@/assets/wanderhood-icon.svg";
 
 import { useState } from "react";
 import {
@@ -55,12 +54,7 @@ export function Header({ cities, selectedCity, onCityChange, transparent = false
             <img
               src={logoWordmark}
               alt="Wanderhood"
-              className="hidden sm:block h-10 w-auto"
-            />
-            <img
-              src={logoIcon}
-              alt="Wanderhood"
-              className="block sm:hidden h-10 w-10"
+              className="h-10 w-auto"
             />
           </div>
         </Link>
