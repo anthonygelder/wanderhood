@@ -15,6 +15,14 @@ import { cities, neighborhoods, hotels } from "./data/cities";
 const AWIN_AFFILIATE_ID = "2700154";
 const AWIN_MID = "6776";
 
+function resolveHotelImage(image: string): string {
+  if (image.startsWith("places/")) {
+    const key = process.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (key) return `https://places.googleapis.com/v1/${image}/media?maxHeightPx=400&key=${key}`;
+  }
+  return image;
+}
+
 function buildHotelBookingUrl(hotelName: string, city: City): string {
   const ss = `${hotelName}, ${city.name}`;
   const destinationUrl = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(ss)}`;
@@ -101,6 +109,7 @@ export class MemStorage implements IStorage {
       .filter((h) => h.neighborhoodId === neighborhoodId)
       .map((h) => ({
         ...h,
+        image: resolveHotelImage(h.image),
         affiliateUrl:
           h.affiliateUrl || (city
             ? buildHotelBookingUrl(h.name, city)

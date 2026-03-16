@@ -1,0 +1,17 @@
+<svg width="380" height="80" viewBox="0 0 380 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&amp;display=swap');</style>
+  </defs>
+  <rect x="0" y="0" width="380" height="80" fill="#0f2027"/>
+  <path d="M40 13 C32 13, 25 20, 25 28 C25 38, 40 55, 40 55 C40 55, 55 38, 55 28 C55 20, 48 13, 40 13Z" fill="#2ecc8a"/>
+  <circle cx="40" cy="28" r="6" fill="#0f2027"/>
+  <line x1="20" y1="33" x2="60" y2="33" stroke="#f5c842" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="25" cy="33" r="2.5" fill="#f5c842"/>
+  <circle cx="55" cy="33" r="2.5" fill="#f5c842"/>
+  <circle cx="34" cy="59" r="1.8" fill="#2ecc8a" opacity="0.5"/>
+  <circle cx="40" cy="62" r="1.8" fill="#2ecc8a" opacity="0.7"/>
+  <circle cx="46" cy="59" r="1.8" fill="#2ecc8a" opacity="0.5"/>
+  <text x="70" y="50" font-family="'Playfair Display', Georgia, serif" font-weight="700" font-size="31" letter-spacing="-0.5">
+    <tspan fill="#f0ede6">wander</tspan><tspan fill="#2ecc8a">hood</tspan>
+  </text>
+</svg>

@@ -91,6 +91,7 @@ export const hotelSchema = z.object({
   description: z.string(),
   distanceToTransit: z.string(),
   amenities: z.array(z.string()),
+  coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
 });
 
 export type Hotel = z.infer<typeof hotelSchema>;

@@ -26,6 +26,17 @@ export default function CityPage() {
   const [hotels, setHotels] = useState<Record<string, Hotel[]>>({});
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | undefined>();
 
+  const { data: mapHotels = [] } = useQuery<Hotel[]>({
+    queryKey: ["/api/neighborhoods", selectedNeighborhood, "hotels"],
+    queryFn: async () => {
+      if (!selectedNeighborhood) return [];
+      const res = await fetch(`/api/neighborhoods/${selectedNeighborhood}/hotels`);
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: !!selectedNeighborhood,
+  });
+
   const { data: cities = [] } = useQuery<City[]>({
     queryKey: ["/api/cities"],
   });
@@ -218,11 +229,13 @@ export default function CityPage() {
         selectedNeighborhood={selectedNeighborhood}
         onNeighborhoodSelect={setSelectedNeighborhood}
         onViewHotels={handleMapViewHotels}
+        hotels={mapHotels}
       />
       <HotelsSection
         cityId={city.id}
         neighborhoods={neighborhoods}
         selectedNeighborhood={selectedNeighborhood}
+        onNeighborhoodChange={setSelectedNeighborhood}
       />
       <NeighborhoodComparison neighborhoods={neighborhoods} />
       <FAQSection />

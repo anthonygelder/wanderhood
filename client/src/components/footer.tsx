@@ -1,5 +1,6 @@
 import { Link } from "wouter";
-import { MapPin, Mail, Twitter, Instagram } from "lucide-react";
+import { Mail, Twitter, Instagram } from "lucide-react";
+import logoIcon from "@/assets/wanderhood-icon.svg";
 
 const cityLinks = [
   { name: "Tokyo", slug: "tokyo" },
@@ -30,9 +31,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
-                <MapPin className="w-5 h-5 text-primary-foreground" />
-              </div>
+              <img src={logoIcon} alt="Wanderhood" className="w-10 h-10" />
               <span className="font-semibold text-lg">Wanderhood</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">

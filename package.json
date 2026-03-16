@@ -8,9 +8,12 @@
     "build": "tsx script/build.ts",
     "start": "NODE_ENV=production node dist/index.cjs",
     "check": "tsc",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "hotels:generate": "tsx --env-file=.env scripts/generate-hotels.ts",
+    "hotels:update": "tsx --env-file=.env scripts/generate-hotels.ts --force"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
     "@googlemaps/js-api-loader": "^2.0.2",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",

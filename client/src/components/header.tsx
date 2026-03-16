@@ -1,7 +1,11 @@
 import { Link, useLocation } from "wouter";
-import { MapPin, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useTheme } from "@/lib/theme";
+import logoWordmarkDark from "@/assets/wanderhood-logo-header.svg";
+import logoWordmarkLight from "@/assets/wanderhood-logo-header-light.svg";
+import logoIcon from "@/assets/wanderhood-icon.svg";
 
 import { useState } from "react";
 import {
@@ -23,6 +27,8 @@ interface HeaderProps {
 export function Header({ cities, selectedCity, onCityChange, transparent = false }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [location, navigate] = useLocation();
+  const { theme } = useTheme();
+  const logoWordmark = theme === "dark" ? logoWordmarkDark : logoWordmarkLight;
 
   const handleCitySelect = (citySlug: string) => {
     if (onCityChange) {
@@ -45,11 +51,17 @@ export function Header({ cities, selectedCity, onCityChange, transparent = false
     >
       <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between gap-4">
         <Link href="/" data-testid="link-home">
-          <div className="flex items-center gap-2 cursor-pointer">
-            <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
-              <MapPin className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="font-semibold text-lg">Wanderhood</span>
+          <div className="cursor-pointer">
+            <img
+              src={logoWordmark}
+              alt="Wanderhood"
+              className="hidden sm:block h-10 w-auto"
+            />
+            <img
+              src={logoIcon}
+              alt="Wanderhood"
+              className="block sm:hidden h-10 w-10"
+            />
           </div>
         </Link>
 

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,12 +11,25 @@ interface HotelsSectionProps {
   cityId: string;
   neighborhoods: Neighborhood[];
   selectedNeighborhood?: string;
+  onNeighborhoodChange?: (id: string) => void;
 }
 
-export function HotelsSection({ cityId, neighborhoods, selectedNeighborhood }: HotelsSectionProps) {
-  const activeNeighborhood = selectedNeighborhood 
-    ? neighborhoods.find(n => n.id === selectedNeighborhood)
-    : neighborhoods[0];
+export function HotelsSection({ cityId, neighborhoods, selectedNeighborhood, onNeighborhoodChange }: HotelsSectionProps) {
+  const [activeId, setActiveId] = useState<string | undefined>(
+    selectedNeighborhood ?? neighborhoods[0]?.id
+  );
+
+  // Sync when the map sets a neighborhood externally
+  useEffect(() => {
+    if (selectedNeighborhood) setActiveId(selectedNeighborhood);
+  }, [selectedNeighborhood]);
+
+  // Default to first neighborhood once list loads
+  useEffect(() => {
+    if (!activeId && neighborhoods.length > 0) setActiveId(neighborhoods[0].id);
+  }, [neighborhoods]);
+
+  const activeNeighborhood = neighborhoods.find(n => n.id === activeId) ?? neighborhoods[0];
 
   const { data: hotels = [], isLoading } = useQuery<Hotel[]>({
     queryKey: ["/api/neighborhoods", activeNeighborhood?.id, "hotels"],
@@ -42,17 +56,25 @@ export function HotelsSection({ cityId, neighborhoods, selectedNeighborhood }: H
   return (
     <section 
       id="hotels-section" 
-      className="py-16 md:py-24"
+      className="py-6"
       data-testid="hotels-section"
     >
       <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-semibold">
-            Stay in {activeNeighborhood?.name || "Your Chosen Neighborhood"}
-          </h2>
-          <p className="text-muted-foreground mt-2">
-            Handpicked hotels with great transit access and walkability
-          </p>
+        {/* Neighborhood selector */}
+        <div className="flex gap-2 overflow-x-auto pb-3 mb-8 scrollbar-hide">
+          {neighborhoods.map((n) => (
+            <button
+              key={n.id}
+              onClick={() => { setActiveId(n.id); onNeighborhoodChange?.(n.id); }}
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
+                n.id === activeId
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-border hover:border-primary hover:text-foreground"
+              }`}
+            >
+              {n.name}
+            </button>
+          ))}
         </div>
 
         {isLoading ? (
