@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { rateLimit } from "express-rate-limit";
 import { storage } from "./storage";
 import { questionnaireInputSchema } from "@shared/schema";
 import OpenAI from "openai";
@@ -67,8 +68,16 @@ export async function registerRoutes(
     }
   });
 
+  const recommendationsLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 20,
+    message: { error: "Too many requests, please try again later." },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
   // Get recommendations based on questionnaire
-  app.post("/api/recommendations", async (req, res) => {
+  app.post("/api/recommendations", recommendationsLimiter, async (req, res) => {
     try {
       const parseResult = questionnaireInputSchema.safeParse(req.body);
       if (!parseResult.success) {

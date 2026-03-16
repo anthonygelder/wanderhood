@@ -177,7 +177,9 @@ export function GoogleMap({
             gap: 4px;
             cursor: default;
           `;
-          el.innerHTML = `<span>${icon}</span><span>${mins}min 🚶</span>`;
+          const s1 = document.createElement("span"); s1.textContent = icon;
+          const s2 = document.createElement("span"); s2.textContent = `${mins}min 🚶`;
+          el.appendChild(s1); el.appendChild(s2);
 
           const marker = new google.maps.marker.AdvancedMarkerElement({
             map: mapInstanceRef.current,
@@ -360,7 +362,9 @@ export function GoogleMap({
         align-items: center;
         gap: 4px;
       `;
-      el.innerHTML = `<span>🏨</span><span>${hotel.name.length > 18 ? hotel.name.slice(0, 18) + "…" : hotel.name}</span>`;
+      const s1 = document.createElement("span"); s1.textContent = "🏨";
+      const s2 = document.createElement("span"); s2.textContent = hotel.name.length > 18 ? hotel.name.slice(0, 18) + "…" : hotel.name;
+      el.appendChild(s1); el.appendChild(s2);
 
       const marker = new google.maps.marker.AdvancedMarkerElement({
         map: mapInstanceRef.current!,
