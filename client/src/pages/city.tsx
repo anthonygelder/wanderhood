@@ -10,6 +10,8 @@ import { RecommendationsSection } from "@/components/recommendations-section";
 import { NeighborhoodComparison } from "@/components/neighborhood-comparison";
 import { GoogleMap } from "@/components/google-map";
 import { HotelsSection } from "@/components/hotels-section";
+import { ExperiencesSection } from "@/components/experiences-section";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ResultsMapSection } from "@/components/results-map-section";
 import { FAQSection } from "@/components/faq-section";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -231,12 +233,32 @@ export default function CityPage() {
         onViewHotels={handleMapViewHotels}
         hotels={mapHotels}
       />
-      <HotelsSection
-        cityId={city.id}
-        neighborhoods={neighborhoods}
-        selectedNeighborhood={selectedNeighborhood}
-        onNeighborhoodChange={setSelectedNeighborhood}
-      />
+      <section id="hotels-section">
+        <div className="max-w-6xl mx-auto px-6 pt-8">
+          <Tabs defaultValue="hotels">
+            <TabsList>
+              <TabsTrigger value="hotels">🏨 Hotels</TabsTrigger>
+              <TabsTrigger value="experiences">🎟️ Experiences</TabsTrigger>
+            </TabsList>
+            <TabsContent value="hotels">
+              <HotelsSection
+                cityId={city.id}
+                neighborhoods={neighborhoods}
+                selectedNeighborhood={selectedNeighborhood}
+                onNeighborhoodChange={setSelectedNeighborhood}
+              />
+            </TabsContent>
+            <TabsContent value="experiences">
+              <ExperiencesSection
+                citySlug={city.slug}
+                neighborhoods={neighborhoods}
+                selectedNeighborhood={selectedNeighborhood}
+                onNeighborhoodChange={setSelectedNeighborhood}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </section>
       <NeighborhoodComparison neighborhoods={neighborhoods} />
       <FAQSection />
       <Footer />

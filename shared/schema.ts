@@ -96,6 +96,37 @@ export const hotelSchema = z.object({
 
 export type Hotel = z.infer<typeof hotelSchema>;
 
+// Viator affiliate partner ID — swap when approved
+export const VIATOR_PID = "P00000000";
+
+// Experience schema
+export const experienceCategorySchema = z.enum([
+  "tour",
+  "food",
+  "adventure",
+  "culture",
+  "wellness",
+  "nightlife",
+  "day_trip",
+]);
+export type ExperienceCategory = z.infer<typeof experienceCategorySchema>;
+
+export const experienceSchema = z.object({
+  id: z.string(),
+  cityId: z.string(),
+  neighborhoodId: z.string().optional(),
+  name: z.string(),
+  category: experienceCategorySchema,
+  duration: z.string(),
+  rating: z.number().min(0).max(5),
+  reviewCount: z.number(),
+  priceFrom: z.number(),
+  image: z.string(),
+  description: z.string(),
+  affiliateUrl: z.string(),
+});
+export type Experience = z.infer<typeof experienceSchema>;
+
 // Questionnaire types
 export const budgetOptionsSchema = z.enum(["budget", "moderate", "upscale", "luxury"]);
 export type BudgetOption = z.infer<typeof budgetOptionsSchema>;

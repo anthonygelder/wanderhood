@@ -1,8 +1,9 @@
-import type { 
-  City, 
-  Neighborhood, 
-  Hotel, 
-  QuestionnaireInput, 
+import type {
+  City,
+  Neighborhood,
+  Hotel,
+  Experience,
+  QuestionnaireInput,
   Recommendation,
   Favorite,
   InsertFavorite
@@ -11,6 +12,7 @@ import { favorites } from "@shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 import { cities, neighborhoods, hotels } from "./data/cities";
+import { experiences } from "./data/experiences";
 
 const AWIN_AFFILIATE_ID = "2700154";
 const AWIN_MID = "6776";
@@ -37,6 +39,7 @@ export interface IStorage {
   getNeighborhoodsByCitySlug(slug: string): Promise<Neighborhood[]>;
   getNeighborhoodById(id: string): Promise<Neighborhood | undefined>;
   getHotelsByNeighborhoodId(neighborhoodId: string): Promise<Hotel[]>;
+  getExperiencesByCityId(cityId: string): Promise<Experience[]>;
   getRecommendations(input: QuestionnaireInput): Promise<Recommendation[]>;
   updateNeighborhoodDescription(id: string, description: string): Promise<void>;
   
@@ -50,6 +53,7 @@ export class MemStorage implements IStorage {
   private cities: City[] = cities;
   private neighborhoods: Neighborhood[] = [...neighborhoods];
   private hotels: Hotel[] = hotels;
+  private experiences: Experience[] = experiences;
 
   async getFavoritesByUserId(userId: string): Promise<Favorite[]> {
     if (!db) return [];
@@ -119,6 +123,10 @@ export class MemStorage implements IStorage {
             ? buildHotelBookingUrl(h.name, city)
             : `https://www.awin1.com/cread.php?awinmid=${AWIN_MID}&awinaffid=${AWIN_AFFILIATE_ID}`),
       }));
+  }
+
+  async getExperiencesByCityId(cityId: string): Promise<Experience[]> {
+    return this.experiences.filter((e) => e.cityId === cityId);
   }
 
   async updateNeighborhoodDescription(id: string, description: string): Promise<void> {
