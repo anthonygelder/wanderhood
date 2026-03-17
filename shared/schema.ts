@@ -97,7 +97,7 @@ export const hotelSchema = z.object({
 export type Hotel = z.infer<typeof hotelSchema>;
 
 // Viator affiliate partner ID — swap when approved
-export const VIATOR_PID = "P00000000";
+export const VIATOR_PID = "P00293051";
 
 // Experience schema
 export const experienceCategorySchema = z.enum([
