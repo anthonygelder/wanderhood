@@ -38,6 +38,7 @@ export interface IStorage {
   getNeighborhoodsByCityId(cityId: string): Promise<Neighborhood[]>;
   getNeighborhoodsByCitySlug(slug: string): Promise<Neighborhood[]>;
   getNeighborhoodById(id: string): Promise<Neighborhood | undefined>;
+  getNeighborhoodBySlug(citySlug: string, neighborhoodSlug: string): Promise<Neighborhood | undefined>;
   getHotelsByNeighborhoodId(neighborhoodId: string): Promise<Hotel[]>;
   getExperiencesByCityId(cityId: string): Promise<Experience[]>;
   getRecommendations(input: QuestionnaireInput): Promise<Recommendation[]>;
@@ -105,6 +106,12 @@ export class MemStorage implements IStorage {
 
   async getNeighborhoodById(id: string): Promise<Neighborhood | undefined> {
     return this.neighborhoods.find((n) => n.id === id);
+  }
+
+  async getNeighborhoodBySlug(citySlug: string, neighborhoodSlug: string): Promise<Neighborhood | undefined> {
+    const city = await this.getCityBySlug(citySlug);
+    if (!city) return undefined;
+    return this.neighborhoods.find((n) => n.cityId === city.id && n.slug === neighborhoodSlug);
   }
 
   async getHotelsByNeighborhoodId(neighborhoodId: string): Promise<Hotel[]> {

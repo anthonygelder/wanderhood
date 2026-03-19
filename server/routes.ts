@@ -57,6 +57,21 @@ export async function registerRoutes(
     }
   });
 
+  // Get a single neighborhood by city slug + neighborhood slug
+  app.get("/api/cities/:citySlug/neighborhoods/:neighborhoodSlug", async (req, res) => {
+    try {
+      const neighborhood = await storage.getNeighborhoodBySlug(
+        req.params.citySlug,
+        req.params.neighborhoodSlug
+      );
+      if (!neighborhood) return res.status(404).json({ error: "Neighborhood not found" });
+      res.json(neighborhood);
+    } catch (error) {
+      console.error("Error fetching neighborhood:", error);
+      res.status(500).json({ error: "Failed to fetch neighborhood" });
+    }
+  });
+
   // Get hotels for a neighborhood
   app.get("/api/neighborhoods/:id/hotels", async (req, res) => {
     try {

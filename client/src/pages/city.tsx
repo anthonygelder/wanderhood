@@ -232,7 +232,7 @@ export default function CityPage() {
           </Tabs>
         </div>
       </section>
-      <NeighborhoodComparison neighborhoods={neighborhoods} />
+      <NeighborhoodComparison neighborhoods={neighborhoods} citySlug={city.slug} />
       <FAQSection />
       <Footer />
     </div>

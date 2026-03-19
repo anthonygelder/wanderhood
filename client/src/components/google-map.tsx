@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "wouter";
 import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -455,6 +456,11 @@ export function GoogleMap({
             View Hotels
             <ExternalLink className="w-3 h-3 ml-2" />
           </Button>
+          <Link href={`/city/${city.slug}/${selected.slug}`}>
+            <a className="block text-center text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 mt-1">
+              View full neighborhood guide →
+            </a>
+          </Link>
         </Card>
       )}
 

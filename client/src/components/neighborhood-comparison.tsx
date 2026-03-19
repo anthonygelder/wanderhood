@@ -1,3 +1,4 @@
+import { Link } from "wouter";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { ScoreBar } from "@/components/score-bar";
@@ -6,9 +7,10 @@ import type { Neighborhood } from "@shared/schema";
 
 interface NeighborhoodComparisonProps {
   neighborhoods: Neighborhood[];
+  citySlug?: string;
 }
 
-export function NeighborhoodComparison({ neighborhoods }: NeighborhoodComparisonProps) {
+export function NeighborhoodComparison({ neighborhoods, citySlug }: NeighborhoodComparisonProps) {
   if (neighborhoods.length === 0) return null;
 
   return (
@@ -52,7 +54,15 @@ export function NeighborhoodComparison({ neighborhoods }: NeighborhoodComparison
                           style={{ backgroundImage: `url(${n.heroImage})` }}
                         />
                         <div>
-                          <p className="font-semibold">{n.name}</p>
+                          {citySlug ? (
+                            <Link href={`/city/${citySlug}/${n.slug}`}>
+                              <a className="font-semibold hover:text-primary hover:underline underline-offset-2 transition-colors">
+                                {n.name}
+                              </a>
+                            </Link>
+                          ) : (
+                            <p className="font-semibold">{n.name}</p>
+                          )}
                           <div className="flex gap-1 mt-1 flex-wrap">
                             {n.vibe.slice(0, 2).map((v) => (
                               <Badge key={v} variant="secondary" size="sm">

@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/lib/theme";
 import Home from "@/pages/home";
 import CityPage from "@/pages/city";
 import CitiesPage from "@/pages/cities";
+import NeighborhoodPage from "@/pages/neighborhood";
 import FavoritesPage from "@/pages/favorites";
 import NotFound from "@/pages/not-found";
 
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/cities" component={CitiesPage} />
       <Route path="/city/:slug" component={CityPage} />
+      <Route path="/city/:slug/:neighborhoodSlug" component={NeighborhoodPage} />
       <Route path="/favorites" component={FavoritesPage} />
       <Route component={NotFound} />
     </Switch>
