@@ -10,6 +10,7 @@ import { FeaturesSection } from "@/components/features-section";
 import { PopularCitiesSection } from "@/components/popular-cities-section";
 import { FAQSection } from "@/components/faq-section";
 import { ResultsMapSection } from "@/components/results-map-section";
+import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { City, QuestionnaireInput, Recommendation, Hotel } from "@shared/schema";
 
@@ -93,6 +94,15 @@ export default function Home() {
           isLoading={recommendationMutation.isPending}
           onStartOver={handleStartOver}
         />
+        {selectedCity && (
+          <div className="text-center py-4">
+            <Link href={`/city/${selectedCity.slug}`}>
+              <a className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4">
+                Explore the full {selectedCity.name} guide →
+              </a>
+            </Link>
+          </div>
+        )}
         {recommendations.length > 0 && (
           <ResultsMapSection
             city={selectedCity || {

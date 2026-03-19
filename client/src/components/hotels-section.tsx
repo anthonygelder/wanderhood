@@ -99,11 +99,14 @@ export function HotelsSection({ cityId, neighborhoods, selectedNeighborhood, onN
                 className="overflow-hidden hover-elevate"
                 data-testid={`card-hotel-${hotel.id}`}
               >
-                <div 
-                  className="h-48 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${hotel.image})` }}
-                >
-                  <div className="h-full w-full bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                <div className="h-48 relative overflow-hidden">
+                  <img
+                    src={hotel.image}
+                    alt={hotel.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80"; }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
                     <Badge variant="secondary" className="bg-background/90">
                       {hotel.priceRange}
                     </Badge>

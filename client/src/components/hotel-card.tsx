@@ -11,9 +11,11 @@ export function HotelCard({ hotel }: HotelCardProps) {
   return (
     <Card className="overflow-visible" data-testid={`card-hotel-${hotel.id}`}>
       <div className="flex gap-4 p-4">
-        <div 
-          className="w-[120px] h-[120px] flex-shrink-0 rounded-md bg-cover bg-center"
-          style={{ backgroundImage: `url(${hotel.image})` }}
+        <img
+          src={hotel.image}
+          alt={hotel.name}
+          className="w-[120px] h-[120px] flex-shrink-0 rounded-md object-cover"
+          onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80"; }}
         />
         <div className="flex-1 flex flex-col justify-between min-w-0">
           <div>

@@ -48,7 +48,6 @@ export function GoogleMap({
   const skipNeighborhoodPanRef = useRef(false);
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
 
-  const [showTransit, setShowTransit] = useState(true);
   const [showBicycling, setShowBicycling] = useState(false);
   const [mapReady, setMapReady] = useState(false);
 
@@ -235,12 +234,6 @@ export function GoogleMap({
     mapInstanceRef.current.setZoom(12);
   }, [city.coordinates.lat, city.coordinates.lng]);
 
-  // Toggle transit layer
-  useEffect(() => {
-    if (!transitLayerRef.current || !mapInstanceRef.current) return;
-    transitLayerRef.current.setMap(showTransit ? mapInstanceRef.current : null);
-  }, [showTransit, mapReady]);
-
   // Toggle bicycling layer
   useEffect(() => {
     if (!bicyclingLayerRef.current || !mapInstanceRef.current) return;
@@ -376,10 +369,9 @@ export function GoogleMap({
     }
   }, [selectedNeighborhood, neighborhoods]);
 
-  const activeLayerCount = [showTransit, showBicycling].filter(Boolean).length;
+  const activeLayerCount = showBicycling ? 1 : 0;
 
   const clearAllLayers = () => {
-    setShowTransit(false);
     setShowBicycling(false);
   };
 
@@ -510,14 +502,6 @@ export function GoogleMap({
           <DropdownMenuContent align="end" className="w-48 z-[10]">
             <DropdownMenuLabel>Map Layers</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuCheckboxItem
-              checked={showTransit}
-              onCheckedChange={() => setShowTransit((v) => !v)}
-              data-testid="layer-transit"
-            >
-              <Train className="w-4 h-4 mr-2" />
-              Transit
-            </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
               checked={showBicycling}
               onCheckedChange={() => setShowBicycling((v) => !v)}
