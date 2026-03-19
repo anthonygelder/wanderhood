@@ -46,6 +46,7 @@ export function GoogleMap({
   const transitLayerRef = useRef<google.maps.TransitLayer | null>(null);
   const bicyclingLayerRef = useRef<google.maps.BicyclingLayer | null>(null);
   const skipNeighborhoodPanRef = useRef(false);
+  const neighborhoodPolygonRef = useRef<google.maps.Polygon | null>(null);
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
 
   const [showBicycling, setShowBicycling] = useState(false);
@@ -222,6 +223,7 @@ export function GoogleMap({
       markersRef.current = [];
       if (transitLayerRef.current) transitLayerRef.current.setMap(null);
       if (bicyclingLayerRef.current) bicyclingLayerRef.current.setMap(null);
+      if (neighborhoodPolygonRef.current) neighborhoodPolygonRef.current.setMap(null);
       mapInstanceRef.current = null;
       setMapReady(false);
     };
@@ -354,18 +356,37 @@ export function GoogleMap({
     });
   }, [hotels, mapReady, onNeighborhoodSelect]);
 
-  // Pan to selected neighborhood (skip when triggered by a hotel pin click)
+  // Pan to selected neighborhood and draw boundary polygon
   useEffect(() => {
+    // Clear previous polygon
+    if (neighborhoodPolygonRef.current) {
+      neighborhoodPolygonRef.current.setMap(null);
+      neighborhoodPolygonRef.current = null;
+    }
+
     if (skipNeighborhoodPanRef.current) {
       skipNeighborhoodPanRef.current = false;
-      return;
-    }
-    if (selected && mapInstanceRef.current) {
+    } else if (selected && mapInstanceRef.current) {
       mapInstanceRef.current.panTo({
         lat: selected.coordinates.lat,
         lng: selected.coordinates.lng,
       });
       mapInstanceRef.current.setZoom(15);
+    }
+
+    // Draw boundary polygon for selected neighborhood
+    if (selected?.boundaryCoordinates?.length && mapInstanceRef.current) {
+      // boundaryCoordinates are stored as [lng, lat] pairs
+      const path = selected.boundaryCoordinates.map(([lng, lat]) => ({ lat, lng }));
+      neighborhoodPolygonRef.current = new google.maps.Polygon({
+        map: mapInstanceRef.current,
+        paths: path,
+        strokeColor: "#3b82f6",
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: "#3b82f6",
+        fillOpacity: 0.12,
+      });
     }
   }, [selectedNeighborhood, neighborhoods]);
 

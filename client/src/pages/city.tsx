@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/header";
@@ -15,8 +15,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ResultsMapSection } from "@/components/results-map-section";
 import { FAQSection } from "@/components/faq-section";
 import { Skeleton } from "@/components/ui/skeleton";
-import { apiRequest } from "@/lib/queryClient";
-import type { City, Neighborhood, QuestionnaireInput, Recommendation, Hotel } from "@shared/schema";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useRecommendations } from "@/hooks/use-recommendations";
+import type { City, Neighborhood, Hotel } from "@shared/schema";
 
 type ViewState = "city" | "questionnaire" | "results";
 
@@ -24,8 +26,6 @@ export default function CityPage() {
   const { slug } = useParams<{ slug: string }>();
   const [, navigate] = useLocation();
   const [viewState, setViewState] = useState<ViewState>("city");
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-  const [hotels, setHotels] = useState<Record<string, Hotel[]>>({});
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | undefined>();
 
   const { data: mapHotels = [] } = useQuery<Hotel[]>({
@@ -62,47 +62,14 @@ export default function CityPage() {
     enabled: !!city,
   });
 
-  const recommendationMutation = useMutation({
-    mutationFn: async (input: QuestionnaireInput) => {
-      const res = await apiRequest("POST", "/api/recommendations", input);
-      return res.json() as Promise<Recommendation[]>;
-    },
-    onSuccess: async (data) => {
-      setRecommendations(data);
-      setViewState("results");
+  const { mutate, isPending, recommendations, hotels, reset } = useRecommendations(
+    () => setViewState("results")
+  );
 
-      const entries = await Promise.all(
-        data.map(async (rec) => {
-          try {
-            const res = await fetch(`/api/neighborhoods/${rec.neighborhood.id}/hotels`);
-            if (res.ok) return [rec.neighborhood.id, await res.json()] as const;
-          } catch (e) {
-            console.error("Failed to fetch hotels", e);
-          }
-          return null;
-        })
-      );
-      setHotels(Object.fromEntries(entries.filter(Boolean) as [string, Hotel[]][]));
-    },
-  });
-
-  const handleStartQuestionnaire = () => {
-    setViewState("questionnaire");
-  };
-
-  const handleQuestionnaireComplete = (data: QuestionnaireInput) => {
-    recommendationMutation.mutate(data);
-  };
-
-  const handleQuestionnaireCancel = () => {
-    setViewState("city");
-  };
-
-  const handleStartOver = () => {
-    setRecommendations([]);
-    setHotels({});
-    setViewState("questionnaire");
-  };
+  const handleStartQuestionnaire = () => setViewState("questionnaire");
+  const handleQuestionnaireComplete = mutate;
+  const handleQuestionnaireCancel = () => setViewState("city");
+  const handleStartOver = () => { reset(); setViewState("questionnaire"); };
 
   if (viewState === "questionnaire") {
     return (
@@ -125,10 +92,16 @@ export default function CityPage() {
           <title>Your Recommendations in {city?.name || "City"} - Wanderhood</title>
         </Helmet>
         <Header cities={cities} />
+        <div className="max-w-6xl mx-auto px-6 pt-8">
+          <Button variant="ghost" size="sm" onClick={() => setViewState("city")}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to {city?.name}
+          </Button>
+        </div>
         <RecommendationsSection
           recommendations={recommendations}
           hotels={hotels}
-          isLoading={recommendationMutation.isPending}
+          isLoading={isPending}
           onStartOver={handleStartOver}
         />
         {recommendations.length > 0 && matchedCity && (

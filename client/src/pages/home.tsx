@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -11,61 +11,26 @@ import { PopularCitiesSection } from "@/components/popular-cities-section";
 import { FAQSection } from "@/components/faq-section";
 import { ResultsMapSection } from "@/components/results-map-section";
 import { Link } from "wouter";
-import { apiRequest } from "@/lib/queryClient";
-import type { City, QuestionnaireInput, Recommendation, Hotel } from "@shared/schema";
+import { useRecommendations } from "@/hooks/use-recommendations";
+import type { City } from "@shared/schema";
 
 type ViewState = "home" | "questionnaire" | "results";
 
 export default function Home() {
   const [viewState, setViewState] = useState<ViewState>("home");
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-  const [hotels, setHotels] = useState<Record<string, Hotel[]>>({});
 
   const { data: cities = [], isLoading: citiesLoading } = useQuery<City[]>({
     queryKey: ["/api/cities"],
   });
 
-  const recommendationMutation = useMutation({
-    mutationFn: async (input: QuestionnaireInput) => {
-      const res = await apiRequest("POST", "/api/recommendations", input);
-      return res.json() as Promise<Recommendation[]>;
-    },
-    onSuccess: async (data) => {
-      setRecommendations(data);
-      setViewState("results");
+  const { mutate, isPending, recommendations, hotels, reset } = useRecommendations(
+    () => setViewState("results")
+  );
 
-      const entries = await Promise.all(
-        data.map(async (rec) => {
-          try {
-            const res = await fetch(`/api/neighborhoods/${rec.neighborhood.id}/hotels`);
-            if (res.ok) return [rec.neighborhood.id, await res.json()] as const;
-          } catch (e) {
-            console.error("Failed to fetch hotels", e);
-          }
-          return null;
-        })
-      );
-      setHotels(Object.fromEntries(entries.filter(Boolean) as [string, Hotel[]][]));
-    },
-  });
-
-  const handleStartQuestionnaire = () => {
-    setViewState("questionnaire");
-  };
-
-  const handleQuestionnaireComplete = (data: QuestionnaireInput) => {
-    recommendationMutation.mutate(data);
-  };
-
-  const handleQuestionnaireCancel = () => {
-    setViewState("home");
-  };
-
-  const handleStartOver = () => {
-    setRecommendations([]);
-    setHotels({});
-    setViewState("questionnaire");
-  };
+  const handleStartQuestionnaire = () => setViewState("questionnaire");
+  const handleQuestionnaireComplete = mutate;
+  const handleQuestionnaireCancel = () => setViewState("home");
+  const handleStartOver = () => { reset(); setViewState("questionnaire"); };
 
   if (viewState === "questionnaire") {
     return (
@@ -91,7 +56,7 @@ export default function Home() {
         <RecommendationsSection
           recommendations={recommendations}
           hotels={hotels}
-          isLoading={recommendationMutation.isPending}
+          isLoading={isPending}
           onStartOver={handleStartOver}
         />
         {selectedCity && (

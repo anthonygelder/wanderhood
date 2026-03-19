@@ -24,6 +24,17 @@ interface ExperiencesSectionProps {
   onNeighborhoodChange?: (id: string) => void;
 }
 
+const CATEGORIES = [
+  { value: "all", label: "All" },
+  { value: "tour", label: "🗺️ Tours" },
+  { value: "food", label: "🍴 Food" },
+  { value: "culture", label: "🏛️ Culture" },
+  { value: "day_trip", label: "🚌 Day Trips" },
+  { value: "adventure", label: "🧗 Adventure" },
+  { value: "wellness", label: "🧘 Wellness" },
+  { value: "nightlife", label: "🌙 Nightlife" },
+];
+
 export function ExperiencesSection({
   citySlug,
   neighborhoods,
@@ -33,6 +44,7 @@ export function ExperiencesSection({
   const [activeId, setActiveId] = useState<string | undefined>(
     selectedNeighborhood ?? neighborhoods[0]?.id
   );
+  const [activeCategory, setActiveCategory] = useState("all");
 
   useEffect(() => {
     if (selectedNeighborhood) setActiveId(selectedNeighborhood);
@@ -52,14 +64,32 @@ export function ExperiencesSection({
     enabled: !!citySlug,
   });
 
-  // Show experiences that either match this neighborhood or are city-wide (no neighborhoodId)
   const experiences = allExperiences.filter(
-    (e) => !e.neighborhoodId || e.neighborhoodId === activeId
+    (e) =>
+      (!e.neighborhoodId || e.neighborhoodId === activeId) &&
+      (activeCategory === "all" || e.category === activeCategory)
   );
 
   return (
     <section className="py-6" data-testid="experiences-section">
       <div className="max-w-6xl mx-auto px-6">
+        {/* Category filter */}
+        <div className="flex gap-2 overflow-x-auto pb-3 mb-4 scrollbar-hide">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.value}
+              onClick={() => setActiveCategory(cat.value)}
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
+                cat.value === activeCategory
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-border hover:border-primary hover:text-foreground"
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
         {/* Neighborhood pill selector */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-8 scrollbar-hide">
           {neighborhoods.map((n) => (

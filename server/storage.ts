@@ -143,6 +143,7 @@ export class MemStorage implements IStorage {
       let score = 0;
       const matchReasons: string[] = [];
 
+      // Budget match: exact = +20pts, one tier below = +10pts (still walkable area)
       if (neighborhood.priceLevel === input.budget) {
         score += 20;
         matchReasons.push(`Perfect for ${input.budget} budgets.`);
@@ -153,12 +154,14 @@ export class MemStorage implements IStorage {
         score += 10;
       }
 
+      // Vibe match: +15pts per matching vibe (max 3 vibes = 45pts possible)
       const vibeMatches = input.vibes.filter((v) => neighborhood.vibe.includes(v));
       score += vibeMatches.length * 15;
       if (vibeMatches.length > 0) {
         matchReasons.push(`Matches your ${vibeMatches.join(", ")} vibe preferences.`);
       }
 
+      // Travel style: score/5 = max +20pts from a 100-point score
       if (input.travelStyle === "walk") {
         score += neighborhood.scores.walkability / 5;
         if (neighborhood.scores.walkability >= 85) {
@@ -170,34 +173,42 @@ export class MemStorage implements IStorage {
           matchReasons.push("Great transit connections throughout the city.");
         }
       } else {
+        // mixed: average both, same max +20pts total
         score += (neighborhood.scores.walkability + neighborhood.scores.transitConnectivity) / 10;
       }
 
+      // Trip purpose: divisors tune how much each metric contributes (max ~10-25pts)
       switch (input.tripPurpose) {
         case "solo":
+          // Safety + local feel equally weighted: max ~20pts
           score += neighborhood.scores.safety / 10;
           score += neighborhood.scores.localVibes / 10;
           break;
         case "couples":
+          // Good food + safety: max ~20pts
           score += neighborhood.scores.foodCoffeeDensity / 10;
           score += neighborhood.scores.safety / 10;
           break;
         case "remote_work":
+          // Heavier food/coffee (cafes to work from): max ~12.5+10=22.5pts
           score += neighborhood.scores.foodCoffeeDensity / 8;
           score += neighborhood.scores.walkability / 10;
           matchReasons.push("Great cafes for remote work.");
           break;
         case "foodie_trip":
+          // Highest single-metric weight: food/4 = max 25pts (intentionally dominant)
           score += neighborhood.scores.foodCoffeeDensity / 4;
           if (neighborhood.scores.foodCoffeeDensity >= 85) {
             matchReasons.push("Amazing food and coffee scene.");
           }
           break;
         case "family":
+          // Safety matters most: /5 = max 20pts; tourist-friendly a bonus
           score += neighborhood.scores.safety / 5;
           score += neighborhood.scores.touristFriendliness / 10;
           break;
         case "friends":
+          // Nightlife primary: /6 ≈ max 16pts; food secondary
           score += neighborhood.scores.nightlife / 6;
           score += neighborhood.scores.foodCoffeeDensity / 10;
           break;
