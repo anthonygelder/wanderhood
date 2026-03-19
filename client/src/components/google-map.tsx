@@ -45,6 +45,7 @@ export function GoogleMap({
   const walkingCircleRef = useRef<google.maps.Circle | null>(null);
   const transitLayerRef = useRef<google.maps.TransitLayer | null>(null);
   const bicyclingLayerRef = useRef<google.maps.BicyclingLayer | null>(null);
+  const skipNeighborhoodPanRef = useRef(false);
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
 
   const [showTransit, setShowTransit] = useState(true);
@@ -91,7 +92,7 @@ export function GoogleMap({
       // Zoom back to neighbourhood level when hotel is deselected
       if (!selectedHotel && selected && mapInstanceRef.current) {
         mapInstanceRef.current.panTo({ lat: selected.coordinates.lat, lng: selected.coordinates.lng });
-        mapInstanceRef.current.setZoom(14);
+        mapInstanceRef.current.setZoom(15);
       }
       return;
     }
@@ -101,7 +102,7 @@ export function GoogleMap({
 
     // Zoom in to hotel
     map.panTo({ lat, lng });
-    map.setZoom(16);
+    map.setZoom(15);
 
     // Draw 15-min walking radius (~1 200 m)
     walkingCircleRef.current = new google.maps.Circle({
@@ -160,31 +161,20 @@ export function GoogleMap({
           const icon = isSubway ? "🚇" : isTrain ? "🚆" : "🚌";
 
           const name = place.displayName?.text ?? "Station";
-          const el = document.createElement("div");
-          el.title = name;
-          el.style.cssText = `
-            background: ${color};
-            color: white;
-            border-radius: 20px;
-            padding: 4px 8px;
-            font-size: 11px;
-            font-weight: 700;
-            white-space: nowrap;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.35);
-            border: 2px solid white;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            cursor: default;
-          `;
-          const s1 = document.createElement("span"); s1.textContent = icon;
-          const s2 = document.createElement("span"); s2.textContent = `${mins}min 🚶`;
-          el.appendChild(s1); el.appendChild(s2);
+          const borderColor = isSubway ? "#1d4ed8" : isTrain ? "#15803d" : "#b45309";
+          const pin = new google.maps.marker.PinElement({
+            background: color,
+            borderColor,
+            glyphColor: "#ffffff",
+            glyph: `${icon} ${mins}m`,
+            scale: 0.85,
+          });
 
           const marker = new google.maps.marker.AdvancedMarkerElement({
             map: mapInstanceRef.current,
             position: { lat: pLat, lng: pLng },
-            content: el,
+            content: pin.element,
+            title: `${name} · ${mins} min walk`,
             zIndex: 300,
           });
 
@@ -346,48 +336,43 @@ export function GoogleMap({
     clearTransitOverlays();
 
     hotels.filter((h) => h.coordinates).forEach((hotel) => {
-      const el = document.createElement("div");
-      el.style.cssText = `
-        background: #7c3aed;
-        color: white;
-        border-radius: 6px;
-        padding: 4px 8px;
-        font-size: 11px;
-        font-weight: 600;
-        white-space: nowrap;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        border: 2px solid white;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-      `;
-      const s1 = document.createElement("span"); s1.textContent = "🏨";
-      const s2 = document.createElement("span"); s2.textContent = hotel.name.length > 18 ? hotel.name.slice(0, 18) + "…" : hotel.name;
-      el.appendChild(s1); el.appendChild(s2);
+      const pin = new google.maps.marker.PinElement({
+        background: "#7c3aed",
+        borderColor: "#5b21b6",
+        glyphColor: "#ffffff",
+        glyph: "🏨",
+        scale: 1.1,
+      });
 
       const marker = new google.maps.marker.AdvancedMarkerElement({
         map: mapInstanceRef.current!,
         position: { lat: hotel.coordinates!.lat, lng: hotel.coordinates!.lng },
-        content: el,
+        content: pin.element,
+        title: hotel.name,
         zIndex: 500,
       });
 
-      marker.addListener("click", () =>
-        setSelectedHotel((prev) => (prev?.id === hotel.id ? null : hotel))
-      );
+      marker.addListener("click", () => {
+        skipNeighborhoodPanRef.current = true;
+        onNeighborhoodSelect(hotel.neighborhoodId);
+        setSelectedHotel((prev) => (prev?.id === hotel.id ? null : hotel));
+      });
       hotelMarkersRef.current.push(marker);
     });
-  }, [hotels, mapReady]);
+  }, [hotels, mapReady, onNeighborhoodSelect]);
 
-  // Pan to selected neighborhood
+  // Pan to selected neighborhood (skip when triggered by a hotel pin click)
   useEffect(() => {
+    if (skipNeighborhoodPanRef.current) {
+      skipNeighborhoodPanRef.current = false;
+      return;
+    }
     if (selected && mapInstanceRef.current) {
       mapInstanceRef.current.panTo({
         lat: selected.coordinates.lat,
         lng: selected.coordinates.lng,
       });
-      mapInstanceRef.current.setZoom(14);
+      mapInstanceRef.current.setZoom(15);
     }
   }, [selectedNeighborhood, neighborhoods]);
 
