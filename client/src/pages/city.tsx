@@ -71,18 +71,18 @@ export default function CityPage() {
       setRecommendations(data);
       setViewState("results");
 
-      const hotelData: Record<string, Hotel[]> = {};
-      for (const rec of data) {
-        try {
-          const res = await fetch(`/api/neighborhoods/${rec.neighborhood.id}/hotels`);
-          if (res.ok) {
-            hotelData[rec.neighborhood.id] = await res.json();
+      const entries = await Promise.all(
+        data.map(async (rec) => {
+          try {
+            const res = await fetch(`/api/neighborhoods/${rec.neighborhood.id}/hotels`);
+            if (res.ok) return [rec.neighborhood.id, await res.json()] as const;
+          } catch (e) {
+            console.error("Failed to fetch hotels", e);
           }
-        } catch (e) {
-          console.error("Failed to fetch hotels", e);
-        }
-      }
-      setHotels(hotelData);
+          return null;
+        })
+      );
+      setHotels(Object.fromEntries(entries.filter(Boolean) as [string, Hotel[]][]));
     },
   });
 

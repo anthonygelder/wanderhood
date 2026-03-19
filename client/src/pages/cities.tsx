@@ -1,15 +1,25 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { CityCard } from "@/components/city-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 import type { City } from "@shared/schema";
 
 export default function CitiesPage() {
+  const [search, setSearch] = useState("");
   const { data: cities = [], isLoading } = useQuery<City[]>({
     queryKey: ["/api/cities"],
   });
+
+  const filtered = cities.filter(
+    (c) =>
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      c.country.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-background" data-testid="page-cities">
@@ -36,6 +46,16 @@ export default function CitiesPage() {
             </p>
           </div>
 
+          <div className="relative max-w-md mx-auto mb-10">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Search cities or countries…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -48,9 +68,13 @@ export default function CitiesPage() {
                 </div>
               ))}
             </div>
+          ) : filtered.length === 0 ? (
+            <p className="text-center text-muted-foreground py-16">
+              No cities match "{search}"
+            </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {cities.map((city) => (
+              {filtered.map((city) => (
                 <CityCard key={city.id} city={city} />
               ))}
             </div>
