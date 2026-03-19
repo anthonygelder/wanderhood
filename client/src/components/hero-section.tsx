@@ -20,10 +20,10 @@ export function HeroSection({ onStartQuestionnaire }: HeroSectionProps) {
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/30" />
       
-      <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 text-center mt-8 md:mt-0">
         <div className="space-y-6">
           <div className="flex justify-center">
-            <img src={logoIcon} alt="Wanderhood" className="w-24 h-24" />
+            <img src={logoIcon} alt="Wanderhood" className="w-16 h-16 md:w-24 md:h-24" />
           </div>
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
