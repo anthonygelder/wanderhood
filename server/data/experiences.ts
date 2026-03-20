@@ -2,7 +2,9 @@ import type { Experience } from "@shared/schema";
 import { VIATOR_PID } from "@shared/schema";
 
 function viatorUrl(cityPath: string, productSlug: string): string {
-  return `https://www.viator.com/${cityPath}/${productSlug}?pid=${VIATOR_PID}&mcid=42383&medium=api`;
+  // Use Viator search so links always resolve — product slugs here are descriptive, not real Viator IDs
+  const query = encodeURIComponent(productSlug.replace(/-/g, " "));
+  return `https://www.viator.com/searchResults/all?text=${query}&pid=${VIATOR_PID}&mcid=42383&medium=link`;
 }
 
 export const experiences: Experience[] = [
