@@ -1,6 +1,11 @@
+import { useState } from "react";
+import { Link } from "wouter";
 import { CityCard } from "@/components/city-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import type { City } from "@shared/schema";
+
+const PAGE_SIZE = 6;
 
 interface PopularCitiesSectionProps {
   cities: City[];
@@ -8,6 +13,9 @@ interface PopularCitiesSectionProps {
 }
 
 export function PopularCitiesSection({ cities, isLoading }: PopularCitiesSectionProps) {
+  const [showAll, setShowAll] = useState(false);
+  const visible = showAll ? cities : cities.slice(0, PAGE_SIZE);
+
   if (isLoading) {
     return (
       <section className="py-16 md:py-24 bg-background" data-testid="cities-loading">
@@ -45,10 +53,32 @@ export function PopularCitiesSection({ cities, isLoading }: PopularCitiesSection
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {cities.map((city) => (
+          {visible.map((city) => (
             <CityCard key={city.id} city={city} />
           ))}
         </div>
+
+        {!showAll && cities.length > PAGE_SIZE && (
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-10">
+            <Button variant="outline" onClick={() => setShowAll(true)}>
+              Show all {cities.length} cities
+            </Button>
+            <Link href="/cities">
+              <a className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4">
+                Browse & search all cities →
+              </a>
+            </Link>
+          </div>
+        )}
+        {showAll && (
+          <div className="flex justify-center mt-10">
+            <Link href="/cities">
+              <a className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4">
+                Browse & search all cities →
+              </a>
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );

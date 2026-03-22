@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScoreBar } from "@/components/score-bar";
-import { X, MapPin, Train, Footprints, Utensils, ExternalLink, Layers, ChevronDown, Star } from "lucide-react";
+import { X, MapPin, Train, Footprints, Utensils, ExternalLink, Layers, ChevronDown, Star, List, Map } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,6 +52,7 @@ export function GoogleMap({
 
   const [showBicycling, setShowBicycling] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  const [mobileListView, setMobileListView] = useState(false);
 
   const selected = neighborhoods.find((n) => n.id === selectedNeighborhood);
 
@@ -261,8 +262,8 @@ export function GoogleMap({
       // Score circle marker
       const markerEl = document.createElement("div");
       markerEl.style.cssText = `
-        width: ${isSelected ? "40px" : "32px"};
-        height: ${isSelected ? "40px" : "32px"};
+        width: ${isSelected ? "48px" : "40px"};
+        height: ${isSelected ? "48px" : "40px"};
         background: ${color};
         border-radius: 50%;
         display: flex;
@@ -398,11 +399,66 @@ export function GoogleMap({
   };
 
   return (
-    <div className="relative w-full h-[500px] md:h-[600px] lg:h-[700px]">
+    <div className="w-full">
+      {/* Mobile list/map toggle */}
+      <div className="flex md:hidden justify-center gap-2 py-3 border-b bg-background">
+        <Button
+          size="sm"
+          variant={mobileListView ? "outline" : "default"}
+          onClick={() => setMobileListView(false)}
+          className="gap-1.5"
+        >
+          <Map className="w-4 h-4" /> Map
+        </Button>
+        <Button
+          size="sm"
+          variant={mobileListView ? "default" : "outline"}
+          onClick={() => setMobileListView(true)}
+          className="gap-1.5"
+        >
+          <List className="w-4 h-4" /> List
+        </Button>
+      </div>
+
+      {/* Mobile list view */}
+      {mobileListView && (
+        <div className="md:hidden divide-y">
+          {neighborhoods.map((n) => {
+            const avg = Math.round((n.scores.walkability + n.scores.transitConnectivity) / 2);
+            const color = getScoreColor(avg);
+            return (
+              <div
+                key={n.id}
+                className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${selectedNeighborhood === n.id ? "bg-primary/5" : "hover:bg-muted/50"}`}
+                onClick={() => { onNeighborhoodSelect(n.id); setMobileListView(false); }}
+              >
+                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white text-sm font-bold border-2 border-white shadow" style={{ background: color }}>
+                  {avg}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold truncate">{n.name}</div>
+                  <div className="flex gap-1 mt-0.5 flex-wrap">
+                    {n.vibe.slice(0, 2).map((v) => (
+                      <span key={v} className="text-xs text-muted-foreground">{v}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground capitalize flex-shrink-0">{n.priceLevel}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Map (hidden on mobile when list view active) */}
+      <div className={`relative h-[360px] md:h-[600px] lg:h-[700px] ${mobileListView ? "hidden md:block" : ""}`}>
       <div ref={mapRef} className="h-full w-full rounded-lg" />
 
+      {/* Neighborhood info card — hidden on mobile when hotel card is showing to prevent overlap */}
       {selected && (
-        <Card className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 p-4 z-[10] shadow-lg">
+        <Card className={`absolute left-4 right-4 md:left-auto md:right-4 md:w-80 p-4 z-[10] shadow-lg ${selectedHotel ? "hidden md:block" : ""}`}
+          style={{ bottom: 'max(1rem, calc(0.5rem + env(safe-area-inset-bottom)))' }}
+        >
           <div className="flex justify-between items-start gap-2 mb-3">
             <div>
               <h3 className="font-semibold text-lg">{selected.name}</h3>
@@ -465,7 +521,9 @@ export function GoogleMap({
       )}
 
       {selectedHotel && (
-        <Card className="absolute bottom-4 left-4 right-4 md:left-4 md:right-auto md:w-72 p-4 z-[10] shadow-lg border-purple-200">
+        <Card className="absolute left-4 right-4 md:left-4 md:right-auto md:w-72 p-4 z-[10] shadow-lg border-purple-200"
+          style={{ bottom: 'max(1rem, calc(0.5rem + env(safe-area-inset-bottom)))' }}
+        >
           <div className="flex justify-between items-start gap-2 mb-2">
             <div>
               <h3 className="font-semibold leading-tight">{selectedHotel.name}</h3>
@@ -559,6 +617,7 @@ export function GoogleMap({
           55+ Fair
         </Badge>
       </div>}
+      </div> {/* end map wrapper */}
     </div>
   );
 }

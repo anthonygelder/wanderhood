@@ -26,6 +26,7 @@ export function NeighborhoodComparison({ neighborhoods, citySlug }: Neighborhood
           <NeighborhoodComparisonModal neighborhoods={neighborhoods} />
         </div>
 
+        <p className="text-xs text-muted-foreground text-center mb-3 md:hidden">← Swipe to compare →</p>
         <ScrollArea className="w-full">
           <div className="min-w-[800px]">
             <table className="w-full" data-testid="table-comparison">

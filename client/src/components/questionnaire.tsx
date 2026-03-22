@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
 import { 
   Wallet, 
   Palette, 
@@ -116,6 +117,7 @@ const tripPurposeOptions: { value: TripPurposeOption; label: string; description
 export function Questionnaire({ cities, defaultCityId, onComplete, onCancel }: QuestionnaireProps) {
   const [step, setStep] = useState(defaultCityId ? 1 : 0);
   const [cityId, setCityId] = useState<string>(defaultCityId || "");
+  const [citySearch, setCitySearch] = useState("");
   const [budget, setBudget] = useState<BudgetOption | null>(null);
   const [vibes, setVibes] = useState<VibeOption[]>([]);
   const [travelStyle, setTravelStyle] = useState<TravelStyleOption | null>(null);
@@ -170,8 +172,8 @@ export function Questionnaire({ cities, defaultCityId, onComplete, onCancel }: Q
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12" data-testid="questionnaire">
-      <Card className="w-full max-w-2xl p-8 space-y-8">
+    <div className="min-h-screen bg-background flex items-start md:items-center justify-center px-4 py-8 md:py-12" data-testid="questionnaire">
+      <Card className="w-full max-w-2xl p-4 sm:p-8 space-y-6 sm:space-y-8">
         <div className="space-y-4">
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>Step {step + 1} of {totalSteps}</span>
@@ -183,22 +185,33 @@ export function Questionnaire({ cities, defaultCityId, onComplete, onCancel }: Q
         </div>
 
         {step === 0 && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
               <h2 className="text-2xl font-semibold">Which city are you visiting?</h2>
               <p className="text-muted-foreground mt-1">Select your destination</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {cities.map((city) => (
-                <OptionCard
-                  key={city.id}
-                  icon={<Users className="w-5 h-5" />}
-                  label={city.name}
-                  description={city.country}
-                  selected={cityId === city.id}
-                  onClick={() => setCityId(city.id)}
-                />
-              ))}
+            <Input
+              placeholder="Search cities…"
+              value={citySearch}
+              onChange={(e) => setCitySearch(e.target.value)}
+              autoFocus
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto pr-1">
+              {cities
+                .filter((c) =>
+                  c.name.toLowerCase().includes(citySearch.toLowerCase()) ||
+                  c.country.toLowerCase().includes(citySearch.toLowerCase())
+                )
+                .map((city) => (
+                  <OptionCard
+                    key={city.id}
+                    icon={<Users className="w-5 h-5" />}
+                    label={city.name}
+                    description={city.country}
+                    selected={cityId === city.id}
+                    onClick={() => setCityId(city.id)}
+                  />
+                ))}
             </div>
           </div>
         )}

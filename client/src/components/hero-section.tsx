@@ -60,17 +60,17 @@ export function HeroSection({ onStartQuestionnaire }: HeroSectionProps) {
             </a>
           </div>
           
-          <div className="pt-8 flex items-center justify-center gap-6 text-white/60 text-sm flex-wrap">
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-white/60 text-sm">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4" />
               <span><strong className="text-white/90">65</strong> cities</span>
             </div>
-            <div className="text-white/30">·</div>
+            <div className="hidden sm:block text-white/30">·</div>
             <div className="flex items-center gap-2">
               <Train className="w-4 h-4" />
               <span><strong className="text-white/90">200+</strong> walkable neighborhoods</span>
             </div>
-            <div className="text-white/30">·</div>
+            <div className="hidden sm:block text-white/30">·</div>
             <div className="flex items-center gap-2">
               <Coffee className="w-4 h-4" />
               <span><strong className="text-white/90">700+</strong> hotels</span>

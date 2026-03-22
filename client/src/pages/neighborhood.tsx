@@ -175,10 +175,58 @@ export default function NeighborhoodPage() {
 
       {/* Body */}
       <div className="max-w-5xl mx-auto px-6 py-12">
-        <div className="grid md:grid-cols-3 gap-10">
+        <div className="flex flex-col md:grid md:grid-cols-3 gap-10">
+
+          {/* Sidebar — first in DOM so it appears at top on mobile */}
+          <div className="space-y-6 md:col-start-3 md:row-start-1">
+
+            {/* CTA card */}
+            <Card className="p-6 space-y-4 md:sticky md:top-6">
+              <h3 className="font-semibold text-lg">Find your perfect stay</h3>
+              <p className="text-sm text-muted-foreground">
+                Answer a few questions and we'll match you with the best neighborhood in {city.name}.
+              </p>
+              <Link href={`/city/${city.slug}`}>
+                <Button className="w-full" asChild>
+                  <a>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Start Questionnaire
+                  </a>
+                </Button>
+              </Link>
+              <Link href={`/city/${city.slug}`}>
+                <a className="block text-center text-sm text-muted-foreground hover:text-foreground underline underline-offset-4">
+                  ← Back to {city.name} guide
+                </a>
+              </Link>
+            </Card>
+
+            {/* Price level */}
+            <Card className="p-5">
+              <h3 className="font-semibold mb-2">Price Level</h3>
+              <Badge variant="secondary" className="text-sm py-1 px-3">
+                {PRICE_LABELS[neighborhood.priceLevel]}
+              </Badge>
+            </Card>
+
+            {/* Top score callout */}
+            <Card className="p-5">
+              <h3 className="font-semibold mb-3">Stands out for</h3>
+              <div className={`text-4xl font-bold mb-1 ${getScoreColor(topScore)}`}>{topScore}</div>
+              <p className="text-sm text-muted-foreground">
+                {topScore === scores.walkability && "Walkability"}
+                {topScore === scores.transitConnectivity && topScore !== scores.walkability && "Transit"}
+                {topScore === scores.safety && topScore !== scores.walkability && topScore !== scores.transitConnectivity && "Safety"}
+                {topScore === scores.foodCoffeeDensity && topScore !== scores.walkability && topScore !== scores.transitConnectivity && topScore !== scores.safety && "Food & Coffee"}
+                {topScore === scores.nightlife && topScore !== scores.walkability && topScore !== scores.transitConnectivity && topScore !== scores.safety && topScore !== scores.foodCoffeeDensity && "Nightlife"}
+                {topScore === scores.localVibes && topScore === Math.max(scores.walkability, scores.transitConnectivity, scores.safety, scores.foodCoffeeDensity, scores.nightlife, scores.localVibes) && " score — Local Vibes"}
+                {" "}out of 100
+              </p>
+            </Card>
+          </div>
 
           {/* Main column */}
-          <div className="md:col-span-2 space-y-10">
+          <div className="md:col-span-2 md:col-start-1 md:row-start-1 space-y-10">
 
             {/* Description */}
             <section>
@@ -281,54 +329,6 @@ export default function NeighborhoodPage() {
                 </p>
               </section>
             )}
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-
-            {/* CTA card */}
-            <Card className="p-6 space-y-4 sticky top-6">
-              <h3 className="font-semibold text-lg">Find your perfect stay</h3>
-              <p className="text-sm text-muted-foreground">
-                Answer a few questions and we'll match you with the best neighborhood in {city.name}.
-              </p>
-              <Link href={`/city/${city.slug}`}>
-                <Button className="w-full" asChild>
-                  <a>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Start Questionnaire
-                  </a>
-                </Button>
-              </Link>
-              <Link href={`/city/${city.slug}`}>
-                <a className="block text-center text-sm text-muted-foreground hover:text-foreground underline underline-offset-4">
-                  ← Back to {city.name} guide
-                </a>
-              </Link>
-            </Card>
-
-            {/* Price level */}
-            <Card className="p-5">
-              <h3 className="font-semibold mb-2">Price Level</h3>
-              <Badge variant="secondary" className="text-sm py-1 px-3">
-                {PRICE_LABELS[neighborhood.priceLevel]}
-              </Badge>
-            </Card>
-
-            {/* Top score callout */}
-            <Card className="p-5">
-              <h3 className="font-semibold mb-3">Stands out for</h3>
-              <div className={`text-4xl font-bold mb-1 ${getScoreColor(topScore)}`}>{topScore}</div>
-              <p className="text-sm text-muted-foreground">
-                {topScore === scores.walkability && "Walkability"}
-                {topScore === scores.transitConnectivity && topScore !== scores.walkability && "Transit"}
-                {topScore === scores.safety && topScore !== scores.walkability && topScore !== scores.transitConnectivity && "Safety"}
-                {topScore === scores.foodCoffeeDensity && topScore !== scores.walkability && topScore !== scores.transitConnectivity && topScore !== scores.safety && "Food & Coffee"}
-                {topScore === scores.nightlife && topScore !== scores.walkability && topScore !== scores.transitConnectivity && topScore !== scores.safety && topScore !== scores.foodCoffeeDensity && "Nightlife"}
-                {topScore === scores.localVibes && topScore === Math.max(scores.walkability, scores.transitConnectivity, scores.safety, scores.foodCoffeeDensity, scores.nightlife, scores.localVibes) && " score — Local Vibes"}
-                {" "}out of 100
-              </p>
-            </Card>
           </div>
         </div>
       </div>

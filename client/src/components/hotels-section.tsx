@@ -61,20 +61,23 @@ export function HotelsSection({ cityId, neighborhoods, selectedNeighborhood, onN
     >
       <div className="max-w-6xl mx-auto px-6">
         {/* Neighborhood selector */}
-        <div className="flex gap-2 overflow-x-auto pb-3 mb-8 scrollbar-hide">
-          {neighborhoods.map((n) => (
-            <button
-              key={n.id}
-              onClick={() => { setActiveId(n.id); onNeighborhoodChange?.(n.id); }}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
-                n.id === activeId
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background text-muted-foreground border-border hover:border-primary hover:text-foreground"
-              }`}
-            >
-              {n.name}
-            </button>
-          ))}
+        <div className="relative mb-8">
+          <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
+            {neighborhoods.map((n) => (
+              <button
+                key={n.id}
+                onClick={() => { setActiveId(n.id); onNeighborhoodChange?.(n.id); }}
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
+                  n.id === activeId
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-muted-foreground border-border hover:border-primary hover:text-foreground"
+                }`}
+              >
+                {n.name}
+              </button>
+            ))}
+          </div>
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-background to-transparent" />
         </div>
 
         {isLoading ? (
