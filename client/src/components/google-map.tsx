@@ -454,63 +454,41 @@ export function GoogleMap({
       <div className={`relative h-[360px] md:h-[600px] lg:h-[700px] ${mobileListView ? "hidden md:block" : ""}`}>
       <div ref={mapRef} className="h-full w-full rounded-lg" />
 
-      {/* Neighborhood info card — hidden on mobile when hotel card is showing to prevent overlap */}
-      {selected && (
-        <Card className={`absolute left-4 right-4 md:left-auto md:right-4 md:w-80 p-4 z-[10] shadow-lg ${selectedHotel ? "hidden md:block" : ""}`}
-          style={{ bottom: 'max(1rem, calc(0.5rem + env(safe-area-inset-bottom)))' }}
+      {/* Neighborhood info card — DESKTOP ONLY: overlaid on map */}
+      {selected && !selectedHotel && (
+        <Card className="hidden md:block absolute right-4 w-80 p-4 z-[10] shadow-lg"
+          style={{ bottom: '1rem' }}
         >
           <div className="flex justify-between items-start gap-2 mb-3">
             <div>
               <h3 className="font-semibold text-lg">{selected.name}</h3>
               <p className="text-sm text-muted-foreground">{city.name}</p>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onNeighborhoodSelect(undefined)}
-              data-testid="button-close-popup"
-            >
+            <Button variant="ghost" size="icon" onClick={() => onNeighborhoodSelect(undefined)} data-testid="button-close-popup">
               <X className="w-4 h-4" />
             </Button>
           </div>
-
           <div className="flex flex-wrap gap-1 mb-3">
             {selected.vibe.slice(0, 3).map((v) => (
-              <Badge key={v} variant="secondary" size="sm">
-                {v}
-              </Badge>
+              <Badge key={v} variant="secondary" size="sm">{v}</Badge>
             ))}
           </div>
-
           <div className="space-y-2 mb-4">
             <div className="flex items-center gap-2">
               <Footprints className="w-4 h-4 text-muted-foreground" />
-              <div className="flex-1">
-                <ScoreBar score={selected.scores.walkability} label="Walk" size="sm" />
-              </div>
+              <div className="flex-1"><ScoreBar score={selected.scores.walkability} label="Walk" size="sm" /></div>
             </div>
             <div className="flex items-center gap-2">
               <Train className="w-4 h-4 text-muted-foreground" />
-              <div className="flex-1">
-                <ScoreBar score={selected.scores.transitConnectivity} label="Transit" size="sm" />
-              </div>
+              <div className="flex-1"><ScoreBar score={selected.scores.transitConnectivity} label="Transit" size="sm" /></div>
             </div>
             <div className="flex items-center gap-2">
               <Utensils className="w-4 h-4 text-muted-foreground" />
-              <div className="flex-1">
-                <ScoreBar score={selected.scores.foodCoffeeDensity} label="Food" size="sm" />
-              </div>
+              <div className="flex-1"><ScoreBar score={selected.scores.foodCoffeeDensity} label="Food" size="sm" /></div>
             </div>
           </div>
-
-          <Button
-            className="w-full"
-            onClick={() => onViewHotels(selected.id)}
-            data-testid="button-view-hotels"
-          >
-            <MapPin className="w-4 h-4 mr-2" />
-            View Hotels
-            <ExternalLink className="w-3 h-3 ml-2" />
+          <Button className="w-full" onClick={() => onViewHotels(selected.id)} data-testid="button-view-hotels">
+            <MapPin className="w-4 h-4 mr-2" />View Hotels<ExternalLink className="w-3 h-3 ml-2" />
           </Button>
           <Link href={`/city/${city.slug}/${selected.slug}`}>
             <a className="block text-center text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 mt-1">
@@ -520,9 +498,10 @@ export function GoogleMap({
         </Card>
       )}
 
+      {/* Hotel info card — DESKTOP ONLY: overlaid on map */}
       {selectedHotel && (
-        <Card className="absolute left-4 right-4 md:left-4 md:right-auto md:w-72 p-4 z-[10] shadow-lg border-purple-200"
-          style={{ bottom: 'max(1rem, calc(0.5rem + env(safe-area-inset-bottom)))' }}
+        <Card className="hidden md:block absolute left-4 w-72 p-4 z-[10] shadow-lg border-purple-200"
+          style={{ bottom: '1rem' }}
         >
           <div className="flex justify-between items-start gap-2 mb-2">
             <div>
@@ -539,17 +518,13 @@ export function GoogleMap({
             </Button>
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-            <Train className="w-3 h-3" />
-            <span>{selectedHotel.distanceToTransit}</span>
+            <Train className="w-3 h-3" /><span>{selectedHotel.distanceToTransit}</span>
           </div>
           <div className="text-sm font-medium text-purple-700 mb-3">{selectedHotel.priceRange}</div>
-          <Button
-            size="sm"
-            className="w-full bg-purple-600 hover:bg-purple-700"
+          <Button size="sm" className="w-full bg-purple-600 hover:bg-purple-700"
             onClick={() => window.open(selectedHotel.affiliateUrl, "_blank")}
           >
-            Book on Booking.com
-            <ExternalLink className="w-3 h-3 ml-2" />
+            Book on Booking.com<ExternalLink className="w-3 h-3 ml-2" />
           </Button>
         </Card>
       )}
@@ -618,6 +593,84 @@ export function GoogleMap({
         </Badge>
       </div>}
       </div> {/* end map wrapper */}
+
+      {/* MOBILE ONLY: info panels below the map (no overlay) */}
+      {!mobileListView && selectedHotel && (
+        <div className="md:hidden border-t bg-card p-4">
+          <div className="flex justify-between items-start gap-2 mb-2">
+            <div>
+              <h3 className="font-semibold">{selectedHotel.name}</h3>
+              <div className="flex items-center gap-1 mt-0.5">
+                {Array.from({ length: selectedHotel.starRating }).map((_, i) => (
+                  <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                ))}
+                <span className="text-xs text-muted-foreground ml-1">{selectedHotel.rating.toFixed(1)}</span>
+              </div>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => { setSelectedHotel(null); clearTransitOverlays(); }}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Train className="w-3 h-3" /><span>{selectedHotel.distanceToTransit}</span>
+              </div>
+              <div className="text-sm font-medium text-purple-700 mt-0.5">{selectedHotel.priceRange}</div>
+            </div>
+            <Button size="sm" className="bg-purple-600 hover:bg-purple-700"
+              onClick={() => window.open(selectedHotel.affiliateUrl, "_blank")}
+            >
+              Book<ExternalLink className="w-3 h-3 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {!mobileListView && selected && !selectedHotel && (
+        <div className="md:hidden border-t bg-card p-4">
+          <div className="flex justify-between items-start gap-2 mb-2">
+            <div>
+              <h3 className="font-semibold">{selected.name}</h3>
+              <div className="flex gap-1 flex-wrap mt-1">
+                {selected.vibe.slice(0, 3).map((v) => (
+                  <Badge key={v} variant="secondary" size="sm">{v}</Badge>
+                ))}
+              </div>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => onNeighborhoodSelect(undefined)} data-testid="button-close-popup">
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="flex items-center gap-3 mt-2">
+            <div className="flex items-center gap-1.5 text-sm">
+              <Footprints className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="font-medium">{selected.scores.walkability}</span>
+              <span className="text-muted-foreground text-xs">walk</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-sm">
+              <Train className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="font-medium">{selected.scores.transitConnectivity}</span>
+              <span className="text-muted-foreground text-xs">transit</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-sm">
+              <Utensils className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="font-medium">{selected.scores.foodCoffeeDensity}</span>
+              <span className="text-muted-foreground text-xs">food</span>
+            </div>
+          </div>
+          <div className="flex gap-2 mt-3">
+            <Button size="sm" className="flex-1" onClick={() => onViewHotels(selected.id)} data-testid="button-view-hotels">
+              <MapPin className="w-3.5 h-3.5 mr-1.5" />Hotels
+            </Button>
+            <Link href={`/city/${city.slug}/${selected.slug}`}>
+              <Button size="sm" variant="outline" asChild>
+                <a>Full guide</a>
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
