@@ -12,14 +12,86 @@ const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
   : null;
 
+const BASE_URL = process.env.BASE_URL || "https://wanderhood.com";
+
+// In-memory email list (replace with a real DB or email service later)
+const subscribedEmails: { email: string; createdAt: string }[] = [];
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  
+
   // Set up auth first (before other routes)
   await setupAuth(app);
   registerAuthRoutes(app);
+
+  // robots.txt
+  app.get("/robots.txt", (_req, res) => {
+    res.type("text/plain").send(
+      `User-agent: *\nAllow: /\n\nSitemap: ${BASE_URL}/sitemap.xml`
+    );
+  });
+
+  // sitemap.xml — all city and neighborhood pages
+  app.get("/sitemap.xml", async (_req, res) => {
+    try {
+      const cities = await storage.getCities();
+      const now = new Date().toISOString().split("T")[0];
+
+      const staticUrls = [
+        { loc: `${BASE_URL}/`, priority: "1.0", changefreq: "weekly" },
+        { loc: `${BASE_URL}/cities`, priority: "0.9", changefreq: "weekly" },
+      ];
+
+      const cityUrls = cities.map((c) => ({
+        loc: `${BASE_URL}/city/${c.slug}`,
+        priority: "0.8",
+        changefreq: "weekly",
+      }));
+
+      const neighborhoodUrls: { loc: string; priority: string; changefreq: string }[] = [];
+      for (const city of cities) {
+        const neighborhoods = await storage.getNeighborhoodsByCitySlug(city.slug);
+        for (const n of neighborhoods) {
+          neighborhoodUrls.push({
+            loc: `${BASE_URL}/city/${city.slug}/${n.slug}`,
+            priority: "0.7",
+            changefreq: "monthly",
+          });
+        }
+      }
+
+      const allUrls = [...staticUrls, ...cityUrls, ...neighborhoodUrls];
+      const urlEntries = allUrls
+        .map(
+          (u) =>
+            `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${now}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`
+        )
+        .join("\n");
+
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlEntries}\n</urlset>`;
+      res.type("application/xml").send(xml);
+    } catch (error) {
+      console.error("Error generating sitemap:", error);
+      res.status(500).send("Error generating sitemap");
+    }
+  });
+
+  // Newsletter subscribe
+  app.post("/api/subscribe", async (req, res) => {
+    const { email } = req.body;
+    if (!email || typeof email !== "string" || !email.includes("@")) {
+      return res.status(400).json({ error: "Valid email required" });
+    }
+    const normalised = email.toLowerCase().trim();
+    if (subscribedEmails.some((s) => s.email === normalised)) {
+      return res.json({ message: "Already subscribed" });
+    }
+    subscribedEmails.push({ email: normalised, createdAt: new Date().toISOString() });
+    console.log(`[subscribe] New subscriber: ${normalised} (total: ${subscribedEmails.length})`);
+    res.json({ message: "Subscribed successfully" });
+  });
   
   // Get all cities
   app.get("/api/cities", async (req, res) => {

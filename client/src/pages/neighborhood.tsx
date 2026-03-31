@@ -100,6 +100,10 @@ export default function NeighborhoodPage() {
         <meta property="og:image" content={neighborhood.heroImage} />
         <meta property="og:url" content={`https://wanderhood.com/city/${city.slug}/${neighborhood.slug}`} />
         <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${neighborhood.name}, ${city.name} — Where to Stay | Wanderhood`} />
+        <meta name="twitter:description" content={neighborhood.description} />
+        <meta name="twitter:image" content={neighborhood.heroImage} />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",

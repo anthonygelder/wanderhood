@@ -169,6 +169,10 @@ export default function CityPage() {
         <meta property="og:url" content={`https://wanderhood.com/city/${city.slug}`} />
         <meta property="og:type" content="article" />
         <meta property="og:image" content={city.heroImage} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${city.name} Car-Free Travel Guide - Wanderhood`} />
+        <meta name="twitter:description" content={`Explore walkable neighborhoods in ${city.name}. ${city.description}`} />
+        <meta name="twitter:image" content={city.heroImage} />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",

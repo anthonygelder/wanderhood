@@ -8,6 +8,7 @@ import { Questionnaire } from "@/components/questionnaire";
 import { RecommendationsSection } from "@/components/recommendations-section";
 import { FeaturesSection } from "@/components/features-section";
 import { PopularCitiesSection } from "@/components/popular-cities-section";
+import { EmailCapture } from "@/components/email-capture";
 import { FAQSection } from "@/components/faq-section";
 import { ResultsMapSection } from "@/components/results-map-section";
 import { Link } from "wouter";
@@ -99,14 +100,17 @@ export default function Home() {
         <meta property="og:description" content="Find walkable neighborhoods with great transit, food, and local character." />
         <meta property="og:url" content="https://wanderhood.com/" />
         <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1200&q=80" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Wanderhood - Car-Free Travel Made Easy" />
         <meta name="twitter:description" content="Find walkable neighborhoods with great transit, food, and local character." />
+        <meta name="twitter:image" content="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1200&q=80" />
       </Helmet>
       <Header cities={cities} />
       <HeroSection onStartQuestionnaire={handleStartQuestionnaire} />
       <FeaturesSection />
       <PopularCitiesSection cities={cities} isLoading={citiesLoading} />
+      <EmailCapture />
       <FAQSection />
       <Footer />
     </div>

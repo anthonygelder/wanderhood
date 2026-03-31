@@ -165,16 +165,27 @@ export function ExperiencesSection({
                       {exp.description}
                     </p>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <span className="text-lg font-bold">From ${exp.priceFrom}</span>
-                      <Button
-                        size="sm"
-                        onClick={() => window.open(exp.affiliateUrl, "_blank")}
-                        data-testid={`button-book-experience-${exp.id}`}
-                      >
-                        Book on Viator
-                        <ExternalLink className="w-3 h-3 ml-1" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => window.open(exp.affiliateUrl, "_blank")}
+                          data-testid={`button-book-experience-${exp.id}`}
+                        >
+                          Viator
+                          <ExternalLink className="w-3 h-3 ml-1" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => window.open(`https://www.getyourguide.com/s/?q=${encodeURIComponent(exp.name)}`, "_blank")}
+                          data-testid={`button-gyg-experience-${exp.id}`}
+                        >
+                          GYG
+                          <ExternalLink className="w-3 h-3 ml-1" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </Card>
