@@ -26,6 +26,9 @@ export async function registerRoutes(
   await setupAuth(app);
   registerAuthRoutes(app);
 
+  // Preload persisted AI descriptions into memory
+  await storage.init();
+
   // robots.txt
   app.get("/robots.txt", (_req, res) => {
     res.type("text/plain").send(

@@ -8,7 +8,7 @@ import type {
   Favorite,
   InsertFavorite
 } from "@shared/schema";
-import { favorites } from "@shared/schema";
+import { favorites, neighborhoodDescriptions } from "@shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 import { cities, neighborhoods, hotels } from "./data/cities";
@@ -17,12 +17,16 @@ import { experiences } from "./data/experiences";
 const AWIN_AFFILIATE_ID = "2700154";
 const AWIN_MID = "6776";
 
-function resolveHotelImage(image: string): string {
+function resolvePlacesImage(image: string, maxHeight = 400): string {
   if (image.startsWith("places/")) {
     const key = process.env.VITE_GOOGLE_MAPS_API_KEY;
-    if (key) return `https://places.googleapis.com/v1/${image}/media?maxHeightPx=400&key=${key}`;
+    if (key) return `https://places.googleapis.com/v1/${image}/media?maxHeightPx=${maxHeight}&key=${key}`;
   }
   return image;
+}
+
+function resolveHotelImage(image: string): string {
+  return resolvePlacesImage(image, 400);
 }
 
 function buildHotelBookingUrl(hotelName: string, city: City): string {
@@ -32,6 +36,7 @@ function buildHotelBookingUrl(hotelName: string, city: City): string {
 }
 
 export interface IStorage {
+  init(): Promise<void>;
   getCities(): Promise<City[]>;
   getCityBySlug(slug: string): Promise<City | undefined>;
   getCityById(id: string): Promise<City | undefined>;
@@ -43,7 +48,7 @@ export interface IStorage {
   getExperiencesByCityId(cityId: string): Promise<Experience[]>;
   getRecommendations(input: QuestionnaireInput): Promise<Recommendation[]>;
   updateNeighborhoodDescription(id: string, description: string): Promise<void>;
-  
+
   getFavoritesByUserId(userId: string): Promise<Favorite[]>;
   addFavorite(favorite: InsertFavorite): Promise<Favorite>;
   removeFavorite(userId: string, neighborhoodId: string): Promise<void>;
@@ -55,6 +60,21 @@ export class MemStorage implements IStorage {
   private neighborhoods: Neighborhood[] = [...neighborhoods];
   private hotels: Hotel[] = hotels;
   private experiences: Experience[] = experiences;
+
+  async init(): Promise<void> {
+    if (!db) return;
+    try {
+      const rows = await db.select().from(neighborhoodDescriptions);
+      for (const row of rows) {
+        const neighborhood = this.neighborhoods.find((n) => n.id === row.neighborhoodId);
+        if (neighborhood) {
+          neighborhood.aiDescription = row.aiDescription;
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load neighborhood descriptions from DB:", err);
+    }
+  }
 
   async getFavoritesByUserId(userId: string): Promise<Favorite[]> {
     if (!db) return [];
@@ -94,24 +114,30 @@ export class MemStorage implements IStorage {
     return this.cities.find((c) => c.id === id);
   }
 
+  private resolveNeighborhood(n: Neighborhood): Neighborhood {
+    return { ...n, heroImage: resolvePlacesImage(n.heroImage, 800) };
+  }
+
   async getNeighborhoodsByCityId(cityId: string): Promise<Neighborhood[]> {
-    return this.neighborhoods.filter((n) => n.cityId === cityId);
+    return this.neighborhoods.filter((n) => n.cityId === cityId).map((n) => this.resolveNeighborhood(n));
   }
 
   async getNeighborhoodsByCitySlug(slug: string): Promise<Neighborhood[]> {
     const city = await this.getCityBySlug(slug);
     if (!city) return [];
-    return this.neighborhoods.filter((n) => n.cityId === city.id);
+    return this.neighborhoods.filter((n) => n.cityId === city.id).map((n) => this.resolveNeighborhood(n));
   }
 
   async getNeighborhoodById(id: string): Promise<Neighborhood | undefined> {
-    return this.neighborhoods.find((n) => n.id === id);
+    const n = this.neighborhoods.find((n) => n.id === id);
+    return n ? this.resolveNeighborhood(n) : undefined;
   }
 
   async getNeighborhoodBySlug(citySlug: string, neighborhoodSlug: string): Promise<Neighborhood | undefined> {
     const city = await this.getCityBySlug(citySlug);
     if (!city) return undefined;
-    return this.neighborhoods.find((n) => n.cityId === city.id && n.slug === neighborhoodSlug);
+    const n = this.neighborhoods.find((n) => n.cityId === city.id && n.slug === neighborhoodSlug);
+    return n ? this.resolveNeighborhood(n) : undefined;
   }
 
   async getHotelsByNeighborhoodId(neighborhoodId: string): Promise<Hotel[]> {
@@ -140,6 +166,19 @@ export class MemStorage implements IStorage {
     const neighborhood = this.neighborhoods.find((n) => n.id === id);
     if (neighborhood) {
       neighborhood.aiDescription = description;
+    }
+    if (db) {
+      try {
+        await db
+          .insert(neighborhoodDescriptions)
+          .values({ neighborhoodId: id, aiDescription: description })
+          .onConflictDoUpdate({
+            target: neighborhoodDescriptions.neighborhoodId,
+            set: { aiDescription: description },
+          });
+      } catch (err) {
+        console.error("Failed to persist AI description to DB:", err);
+      }
     }
   }
 

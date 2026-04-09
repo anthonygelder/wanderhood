@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { pgTable, serial, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { users } from "./models/auth";
@@ -19,6 +19,13 @@ export const favoritesRelations = relations(favorites, ({ one }) => ({
     references: [users.id],
   }),
 }));
+
+// AI descriptions table — persists OpenAI-generated neighborhood descriptions
+export const neighborhoodDescriptions = pgTable("neighborhood_descriptions", {
+  neighborhoodId: varchar("neighborhood_id", { length: 255 }).primaryKey(),
+  aiDescription: text("ai_description").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
 
 // Insert schema for favorites
 export const insertFavoriteSchema = createInsertSchema(favorites).omit({ id: true, createdAt: true });

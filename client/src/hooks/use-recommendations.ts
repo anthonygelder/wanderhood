@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { QuestionnaireInput, Recommendation, Hotel } from "@shared/schema";
 
 export function useRecommendations(onSuccess?: (data: Recommendation[]) => void) {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [hotels, setHotels] = useState<Record<string, Hotel[]>>({});
+  const { toast } = useToast();
 
   const mutation = useMutation({
     mutationFn: async (input: QuestionnaireInput) => {
@@ -27,6 +29,16 @@ export function useRecommendations(onSuccess?: (data: Recommendation[]) => void)
         })
       );
       setHotels(Object.fromEntries(entries.filter(Boolean) as [string, Hotel[]][]));
+    },
+    onError: (error: Error) => {
+      const is429 = error.message.startsWith("429");
+      toast({
+        title: is429 ? "Too many requests" : "Something went wrong",
+        description: is429
+          ? "You've made too many requests. Please wait a few minutes and try again."
+          : "Failed to get recommendations. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueries } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -45,6 +45,23 @@ export default function FavoritesPage() {
       return res.json();
     },
     enabled: isAuthenticated,
+  });
+
+  const uniqueCityIds = Array.from(new Set(favorites.map((f) => f.cityId)));
+  const neighborhoodQueries = useQueries({
+    queries: uniqueCityIds.map((cityId) => ({
+      queryKey: ["/api/cities", cityId, "neighborhoods"],
+      queryFn: async () => {
+        const res = await fetch(`/api/cities/${cityId}/neighborhoods`);
+        if (!res.ok) return [] as Neighborhood[];
+        return res.json() as Promise<Neighborhood[]>;
+      },
+    })),
+  });
+
+  const neighborhoodMap = new Map<string, Neighborhood>();
+  neighborhoodQueries.forEach((q) => {
+    if (q.data) q.data.forEach((n) => neighborhoodMap.set(n.id, n));
   });
 
   const handleRemoveFavorite = async (neighborhoodId: string) => {
@@ -120,8 +137,8 @@ export default function FavoritesPage() {
             {favorites.map((favorite) => {
               const city = cities.find((c) => c.id === favorite.cityId);
               return (
-                <Card 
-                  key={favorite.id} 
+                <Card
+                  key={favorite.id}
                   className="p-4 flex items-center gap-4"
                   data-testid={`card-favorite-${favorite.neighborhoodId}`}
                 >
@@ -133,19 +150,37 @@ export default function FavoritesPage() {
                       </span>
                     </div>
                     <h3 className="font-semibold text-lg">
-                      {favorite.neighborhoodId.split("-").map(
-                        (w) => w.charAt(0).toUpperCase() + w.slice(1)
-                      ).join(" ")}
+                      {neighborhoodMap.get(favorite.neighborhoodId)?.name ??
+                        favorite.neighborhoodId.split("-").map(
+                          (w) => w.charAt(0).toUpperCase() + w.slice(1)
+                        ).join(" ")}
                     </h3>
+                    {neighborhoodMap.get(favorite.neighborhoodId)?.vibe && (
+                      <div className="flex gap-1 mt-1">
+                        {neighborhoodMap.get(favorite.neighborhoodId)!.vibe.slice(0, 2).map((v) => (
+                          <Badge key={v} variant="secondary" className="text-xs">
+                            {v}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
-                    <Link href={`/cities/${favorite.cityId}`}>
-                      <Button variant="outline" size="sm" data-testid={`button-view-${favorite.neighborhoodId}`}>
-                        View
-                        <ArrowRight className="w-4 h-4 ml-1" />
-                      </Button>
-                    </Link>
+                    {(() => {
+                      const n = neighborhoodMap.get(favorite.neighborhoodId);
+                      const href = n
+                        ? `/city/${favorite.cityId}/${n.slug}`
+                        : `/city/${favorite.cityId}`;
+                      return (
+                        <Link href={href}>
+                          <Button variant="outline" size="sm" data-testid={`button-view-${favorite.neighborhoodId}`}>
+                            View
+                            <ArrowRight className="w-4 h-4 ml-1" />
+                          </Button>
+                        </Link>
+                      );
+                    })()}
                     <Button 
                       variant="ghost" 
                       size="icon"
