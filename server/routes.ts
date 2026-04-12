@@ -5,7 +5,8 @@ import { storage } from "./storage";
 import { questionnaireInputSchema } from "@shared/schema";
 import OpenAI from "openai";
 
-import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
+import { setupAuth, isAuthenticated, registerAuthRoutes } from "./auth";
+import type { User } from "@shared/schema";
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
 const openai = process.env.OPENAI_API_KEY
@@ -32,7 +33,7 @@ export async function registerRoutes(
   // robots.txt
   app.get("/robots.txt", (_req, res) => {
     res.type("text/plain").send(
-      `User-agent: *\nAllow: /\n\nSitemap: ${BASE_URL}/sitemap.xml`
+      `User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: ${BASE_URL}/sitemap.xml`
     );
   });
 
@@ -100,6 +101,7 @@ export async function registerRoutes(
   app.get("/api/cities", async (req, res) => {
     try {
       const cities = await storage.getCities();
+      res.set("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
       res.json(cities);
     } catch (error) {
       console.error("Error fetching cities:", error);
@@ -125,6 +127,7 @@ export async function registerRoutes(
   app.get("/api/cities/:slug/neighborhoods", async (req, res) => {
     try {
       const neighborhoods = await storage.getNeighborhoodsByCitySlug(req.params.slug);
+      res.set("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
       res.json(neighborhoods);
     } catch (error) {
       console.error("Error fetching neighborhoods:", error);
@@ -164,6 +167,10 @@ export async function registerRoutes(
     message: { error: "Too many requests, please try again later." },
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: (req: any) => {
+      // Use authenticated user ID when available so logged-in users aren't penalised on shared IPs
+      return req.user?.id || req.ip || "unknown";
+    },
   });
 
   // Get experiences for a city
@@ -222,9 +229,9 @@ export async function registerRoutes(
   });
 
   // Favorites endpoints (protected)
-  app.get("/api/favorites", isAuthenticated, async (req: any, res) => {
+  app.get("/api/favorites", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as User).id;
       const userFavorites = await storage.getFavoritesByUserId(userId);
       res.json(userFavorites);
     } catch (error) {
@@ -233,9 +240,9 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/favorites", isAuthenticated, async (req: any, res) => {
+  app.post("/api/favorites", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as User).id;
       const { neighborhoodId, cityId } = req.body;
       
       if (!neighborhoodId || !cityId) {
@@ -259,9 +266,9 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/favorites/:neighborhoodId", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/favorites/:neighborhoodId", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as User).id;
       const { neighborhoodId } = req.params;
       
       await storage.removeFavorite(userId, neighborhoodId);
@@ -272,9 +279,9 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/favorites/:neighborhoodId", isAuthenticated, async (req: any, res) => {
+  app.get("/api/favorites/:neighborhoodId", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.user as User).id;
       const { neighborhoodId } = req.params;
       
       const isFav = await storage.isFavorite(userId, neighborhoodId);

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, varchar, integer, numeric, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { users } from "./models/auth";
@@ -19,6 +19,38 @@ export const favoritesRelations = relations(favorites, ({ one }) => ({
     references: [users.id],
   }),
 }));
+
+// Hotels table — mirrors in-memory hotel data, kept in sync by scripts/seed.ts
+export const hotelsTable = pgTable("hotels_data", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  neighborhoodId: varchar("neighborhood_id", { length: 255 }).notNull(),
+  name: varchar("name", { length: 500 }).notNull(),
+  starRating: integer("star_rating").notNull(),
+  rating: numeric("rating", { precision: 3, scale: 1 }).notNull(),
+  priceRange: varchar("price_range", { length: 100 }).notNull(),
+  image: text("image").notNull(),
+  affiliateUrl: text("affiliate_url"),
+  description: text("description").notNull(),
+  distanceToTransit: varchar("distance_to_transit", { length: 100 }).notNull(),
+  amenities: jsonb("amenities").notNull().$type<string[]>(),
+  coordinates: jsonb("coordinates").$type<{ lat: number; lng: number }>(),
+});
+
+// Experiences table — mirrors in-memory experience data, kept in sync by scripts/seed.ts
+export const experiencesTable = pgTable("experiences_data", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  cityId: varchar("city_id", { length: 255 }).notNull(),
+  neighborhoodId: varchar("neighborhood_id", { length: 255 }),
+  name: varchar("name", { length: 500 }).notNull(),
+  category: varchar("category", { length: 50 }).notNull(),
+  duration: varchar("duration", { length: 100 }).notNull(),
+  rating: numeric("rating", { precision: 3, scale: 1 }).notNull(),
+  reviewCount: integer("review_count").notNull(),
+  priceFrom: numeric("price_from", { precision: 10, scale: 2 }).notNull(),
+  image: text("image").notNull(),
+  description: text("description").notNull(),
+  affiliateUrl: text("affiliate_url").notNull(),
+});
 
 // AI descriptions table — persists OpenAI-generated neighborhood descriptions
 export const neighborhoodDescriptions = pgTable("neighborhood_descriptions", {

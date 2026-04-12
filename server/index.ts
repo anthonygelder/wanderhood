@@ -68,14 +68,25 @@ app.use((req, res, next) => {
 (async () => {
   await registerRoutes(httpServer, app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = process.env.NODE_ENV === "production"
       ? (status < 500 ? err.message : "Internal Server Error")
       : err.message || "Internal Server Error";
 
-    if (status >= 500) console.error(err);
+    if (status >= 500) {
+      console.error(`[error] ${req.method} ${req.path} → ${status}`, err.stack || err);
+    }
     res.status(status).json({ message });
+  });
+
+  process.on("unhandledRejection", (reason) => {
+    console.error("[unhandledRejection]", reason);
+  });
+
+  process.on("uncaughtException", (err) => {
+    console.error("[uncaughtException]", err.stack || err);
+    process.exit(1);
   });
 
   // importantly only setup vite in development and after
