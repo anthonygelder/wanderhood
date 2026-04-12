@@ -4,13 +4,15 @@ import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { ScoreBar } from "@/components/score-bar";
+import { PhotoGallery } from "@/components/photo-gallery";
+import { ReviewSection } from "@/components/review-section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   MapPin, Train, Footprints, Shield, Utensils, Music, Users,
-  Star, ExternalLink, ArrowLeft, Sparkles, ChevronRight,
+  Star, ExternalLink, Sparkles, ChevronRight,
 } from "lucide-react";
 import type { City, Neighborhood, Hotel } from "@shared/schema";
 
@@ -107,19 +109,50 @@ export default function NeighborhoodPage() {
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "TouristDestination",
+            "@type": "TouristAttraction",
             "name": `${neighborhood.name} — ${city.name}`,
-            "description": neighborhood.description,
+            "description": neighborhood.aiDescription || neighborhood.description,
             "url": `https://wanderhood.com/city/${city.slug}/${neighborhood.slug}`,
-            "image": neighborhood.heroImage,
+            "image": [neighborhood.heroImage, ...(neighborhood.photos ?? [])],
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": neighborhood.coordinates.lat,
+              "longitude": neighborhood.coordinates.lng,
+            },
             "containedInPlace": {
               "@type": "City",
               "name": city.name,
               "url": `https://wanderhood.com/city/${city.slug}`,
             },
             "touristType": neighborhood.vibe,
+            "amenityFeature": [
+              { "@type": "LocationFeatureSpecification", "name": "Walkability", "value": scores.walkability },
+              { "@type": "LocationFeatureSpecification", "name": "Transit Connectivity", "value": scores.transitConnectivity },
+              { "@type": "LocationFeatureSpecification", "name": "Safety", "value": scores.safety },
+            ],
           })}
         </script>
+        {hotels.length > 0 && (
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "ItemList",
+              "name": `Hotels in ${neighborhood.name}, ${city.name}`,
+              "itemListElement": hotels.slice(0, 5).map((h, i) => ({
+                "@type": "ListItem",
+                "position": i + 1,
+                "item": {
+                  "@type": "LodgingBusiness",
+                  "name": h.name,
+                  "starRating": { "@type": "Rating", "ratingValue": h.starRating },
+                  "aggregateRating": { "@type": "AggregateRating", "ratingValue": h.rating, "bestRating": 10 },
+                  "priceRange": h.priceRange,
+                  "url": h.affiliateUrl,
+                },
+              })),
+            })}
+          </script>
+        )}
       </Helmet>
 
       <Header cities={cities} />
@@ -161,6 +194,13 @@ export default function NeighborhoodPage() {
           </div>
         </div>
       </div>
+
+      {/* Photo gallery (only shown when photos data exists) */}
+      {neighborhood.photos && neighborhood.photos.length > 0 && (
+        <div className="max-w-5xl mx-auto px-6 pt-8">
+          <PhotoGallery photos={neighborhood.photos} neighborhoodName={neighborhood.name} />
+        </div>
+      )}
 
       {/* Quick score strip */}
       <div className="bg-card border-b">
@@ -333,6 +373,12 @@ export default function NeighborhoodPage() {
                 </p>
               </section>
             )}
+            {/* Reviews */}
+            <ReviewSection
+              neighborhoodId={neighborhood.id}
+              cityId={neighborhood.cityId}
+              neighborhoodName={neighborhood.name}
+            />
           </div>
         </div>
       </div>

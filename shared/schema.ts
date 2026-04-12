@@ -59,6 +59,21 @@ export const neighborhoodDescriptions = pgTable("neighborhood_descriptions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// User reviews — star rating + optional one-line tip per neighborhood
+export const reviews = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+  neighborhoodId: varchar("neighborhood_id", { length: 255 }).notNull(),
+  cityId: varchar("city_id", { length: 255 }).notNull(),
+  rating: integer("rating").notNull(), // 1–5
+  tip: varchar("tip", { length: 280 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertReviewSchema = createInsertSchema(reviews).omit({ id: true, createdAt: true });
+export type InsertReview = z.infer<typeof insertReviewSchema>;
+export type Review = typeof reviews.$inferSelect;
+
 // Insert schema for favorites
 export const insertFavoriteSchema = createInsertSchema(favorites).omit({ id: true, createdAt: true });
 export type InsertFavorite = z.infer<typeof insertFavoriteSchema>;
@@ -103,6 +118,7 @@ export const neighborhoodSchema = z.object({
   description: z.string(),
   aiDescription: z.string().optional(),
   heroImage: z.string(),
+  photos: z.array(z.string()).optional(),
   vibe: z.array(z.string()),
   scores: neighborhoodScoresSchema,
   highlights: z.array(z.string()),

@@ -6,7 +6,7 @@ import { questionnaireInputSchema } from "@shared/schema";
 import OpenAI from "openai";
 
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./auth";
-import type { User } from "@shared/schema";
+import type { User, TripPurposeOption } from "@shared/schema";
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
 const openai = process.env.OPENAI_API_KEY
@@ -43,9 +43,11 @@ export async function registerRoutes(
       const cities = await storage.getCities();
       const now = new Date().toISOString().split("T")[0];
 
+      const TRIP_PURPOSES = ["remote-work", "couples", "families", "solo", "foodie", "friends"];
       const staticUrls = [
         { loc: `${BASE_URL}/`, priority: "1.0", changefreq: "weekly" },
         { loc: `${BASE_URL}/cities`, priority: "0.9", changefreq: "weekly" },
+        ...TRIP_PURPOSES.map((p) => ({ loc: `${BASE_URL}/neighborhoods/${p}`, priority: "0.8", changefreq: "weekly" })),
       ];
 
       const cityUrls = cities.map((c) => ({
@@ -225,6 +227,79 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error generating recommendations:", error);
       res.status(500).json({ error: "Failed to generate recommendations" });
+    }
+  });
+
+  // Neighborhood comparison
+  app.get("/api/compare/:citySlug/:n1Slug/:n2Slug", async (req, res) => {
+    try {
+      const { citySlug, n1Slug, n2Slug } = req.params;
+      const [city, n1, n2] = await Promise.all([
+        storage.getCityBySlug(citySlug),
+        storage.getNeighborhoodBySlug(citySlug, n1Slug),
+        storage.getNeighborhoodBySlug(citySlug, n2Slug),
+      ]);
+      if (!city || !n1 || !n2) return res.status(404).json({ error: "Not found" });
+      res.set("Cache-Control", "public, max-age=3600");
+      res.json({ city, n1, n2 });
+    } catch (error) {
+      console.error("Error fetching comparison:", error);
+      res.status(500).json({ error: "Failed to fetch comparison" });
+    }
+  });
+
+  // Top neighborhoods globally by trip purpose
+  const VALID_PURPOSES = new Set(["solo", "couples", "remote_work", "foodie_trip", "family", "friends"]);
+  app.get("/api/top/:purpose", async (req, res) => {
+    try {
+      const purpose = req.params.purpose as TripPurposeOption;
+      if (!VALID_PURPOSES.has(purpose)) return res.status(400).json({ error: "Invalid purpose" });
+      const results = await storage.getTopNeighborhoodsByPurpose(purpose);
+      res.set("Cache-Control", "public, max-age=3600");
+      res.json(results);
+    } catch (error) {
+      console.error("Error fetching top neighborhoods:", error);
+      res.status(500).json({ error: "Failed to fetch top neighborhoods" });
+    }
+  });
+
+  // Reviews (public read, auth write)
+  app.get("/api/neighborhoods/:id/reviews", async (req, res) => {
+    try {
+      const reviewList = await storage.getReviewsByNeighborhoodId(req.params.id);
+      res.json(reviewList);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      res.status(500).json({ error: "Failed to fetch reviews" });
+    }
+  });
+
+  app.post("/api/neighborhoods/:id/reviews", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as User).id;
+      const neighborhoodId = req.params.id;
+      const { cityId, rating, tip } = req.body;
+      if (!cityId || typeof rating !== "number" || rating < 1 || rating > 5) {
+        return res.status(400).json({ error: "cityId and rating (1-5) are required" });
+      }
+      const existing = await storage.getUserReview(userId, neighborhoodId);
+      if (existing) return res.status(409).json({ error: "You have already reviewed this neighborhood" });
+      const review = await storage.addReview({ userId, neighborhoodId, cityId, rating, tip: tip || null });
+      res.status(201).json(review);
+    } catch (error) {
+      console.error("Error adding review:", error);
+      res.status(500).json({ error: "Failed to add review" });
+    }
+  });
+
+  app.delete("/api/reviews/:id", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as User).id;
+      await storage.deleteReview(Number(req.params.id), userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      res.status(500).json({ error: "Failed to delete review" });
     }
   });
 

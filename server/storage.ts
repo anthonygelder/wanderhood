@@ -6,11 +6,14 @@ import type {
   QuestionnaireInput,
   Recommendation,
   Favorite,
-  InsertFavorite
+  InsertFavorite,
+  Review,
+  InsertReview,
+  TripPurposeOption,
 } from "@shared/schema";
-import { favorites, neighborhoodDescriptions } from "@shared/schema";
+import { favorites, neighborhoodDescriptions, reviews } from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { cities, neighborhoods, hotels } from "./data/cities";
 import { experiences } from "./data/experiences";
 
@@ -48,6 +51,12 @@ export interface IStorage {
   getExperiencesByCityId(cityId: string): Promise<Experience[]>;
   getRecommendations(input: QuestionnaireInput): Promise<Recommendation[]>;
   updateNeighborhoodDescription(id: string, description: string): Promise<void>;
+  getTopNeighborhoodsByPurpose(purpose: TripPurposeOption, limit?: number): Promise<Array<{ neighborhood: Neighborhood; city: City; score: number }>>;
+
+  getReviewsByNeighborhoodId(neighborhoodId: string): Promise<Review[]>;
+  addReview(review: InsertReview): Promise<Review>;
+  deleteReview(reviewId: number, userId: string): Promise<void>;
+  getUserReview(userId: string, neighborhoodId: string): Promise<Review | undefined>;
 
   getFavoritesByUserId(userId: string): Promise<Favorite[]>;
   addFavorite(favorite: InsertFavorite): Promise<Favorite>;
@@ -180,6 +189,85 @@ export class MemStorage implements IStorage {
         console.error("Failed to persist AI description to DB:", err);
       }
     }
+  }
+
+  async getReviewsByNeighborhoodId(neighborhoodId: string): Promise<Review[]> {
+    if (!db) return [];
+    return db.select().from(reviews).where(eq(reviews.neighborhoodId, neighborhoodId)).orderBy(desc(reviews.createdAt));
+  }
+
+  async addReview(review: InsertReview): Promise<Review> {
+    if (!db) throw new Error("Database not configured");
+    const [created] = await db.insert(reviews).values(review).returning();
+    return created;
+  }
+
+  async deleteReview(reviewId: number, userId: string): Promise<void> {
+    if (!db) return;
+    await db.delete(reviews).where(and(eq(reviews.id, reviewId), eq(reviews.userId, userId)));
+  }
+
+  async getUserReview(userId: string, neighborhoodId: string): Promise<Review | undefined> {
+    if (!db) return undefined;
+    const [review] = await db.select().from(reviews).where(
+      and(eq(reviews.userId, userId), eq(reviews.neighborhoodId, neighborhoodId))
+    );
+    return review;
+  }
+
+  async getTopNeighborhoodsByPurpose(
+    purpose: TripPurposeOption,
+    limit = 18
+  ): Promise<Array<{ neighborhood: Neighborhood; city: City; score: number }>> {
+    const results: Array<{ neighborhood: Neighborhood; city: City; score: number }> = [];
+    const perCityLimit = 2;
+    const cityCount: Record<string, number> = {};
+
+    const allScoredNeighborhoods = this.neighborhoods.map((n) => {
+      const city = this.cities.find((c) => c.id === n.cityId);
+      if (!city) return null;
+
+      let score = 0;
+      // Mobility baseline (max 20pts)
+      score += (n.scores.walkability + n.scores.transitConnectivity) / 10;
+      // Safety baseline (max 5pts)
+      score += n.scores.safety / 20;
+      // Purpose-specific weighting (matches getRecommendations logic)
+      switch (purpose) {
+        case "solo":
+          score += n.scores.safety / 10 + n.scores.localVibes / 10;
+          break;
+        case "couples":
+          score += n.scores.foodCoffeeDensity / 10 + n.scores.safety / 10;
+          break;
+        case "remote_work":
+          score += n.scores.foodCoffeeDensity / 8 + n.scores.walkability / 10;
+          break;
+        case "foodie_trip":
+          score += n.scores.foodCoffeeDensity / 4;
+          break;
+        case "family":
+          score += n.scores.safety / 5 + n.scores.touristFriendliness / 10;
+          break;
+        case "friends":
+          score += n.scores.nightlife / 6 + n.scores.foodCoffeeDensity / 10;
+          break;
+      }
+
+      return { neighborhood: this.resolveNeighborhood(n), city, score: Math.min(100, Math.round(score)) };
+    }).filter(Boolean) as Array<{ neighborhood: Neighborhood; city: City; score: number }>;
+
+    allScoredNeighborhoods.sort((a, b) => b.score - a.score);
+
+    for (const item of allScoredNeighborhoods) {
+      if (results.length >= limit) break;
+      const count = cityCount[item.city.id] ?? 0;
+      if (count >= perCityLimit) continue;
+      results.push(item);
+      cityCount[item.city.id] = count + 1;
+    }
+
+    return results;
   }
 
   async getRecommendations(input: QuestionnaireInput): Promise<Recommendation[]> {

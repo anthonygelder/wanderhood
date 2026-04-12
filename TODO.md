@@ -36,19 +36,20 @@
 
 ## New Features: SEO & Growth
 
-- [ ] Auto-generated long-tail landing pages — `/neighborhoods/remote-work`, `/neighborhoods/couples`, etc.
-- [ ] Dedicated neighborhood vs. neighborhood comparison pages (SEO landing pages, not just the modal)
-- [ ] City-type guide pages — "Digital nomad guide to Lisbon", "Romantic weekend in Paris"
-- [ ] Improve JSON-LD structured data — add `TouristAttraction` and `LodgingBusiness` schema types
+- [x] Auto-generated long-tail landing pages — `/neighborhoods/remote-work`, `/neighborhoods/couples`, etc.
+- [x] Dedicated neighborhood vs. neighborhood comparison pages (SEO landing pages, not just the modal)
+- [x] City-type guide pages — "Digital nomad guide to Lisbon", "Romantic weekend in Paris"
+- [x] Improve JSON-LD structured data — add `TouristAttraction` and `LodgingBusiness` schema types
 - [ ] Multilingual support — Spanish first (large addressable market, same codebase)
 
 ## New Features: UX & Retention
 
 - [ ] Push notifications / email alerts when new neighborhoods are added in a user's saved cities
-- [ ] PWA manifest + se pricing via Booking.com API — replace static price range strings with live rates
-- [ ] Restaurant / cafrvice worker — enable "Add to Home Screen" on mobile
-- [ ] User review system — brief star rating + one-line tip per visited neighborhood
-- [ ] Neighborhood photo gallery — user-submitted or curated additional images via Places API
+- [ ] PWA manifest + service worker for "Add to Home Screen"
+- [ ] Real-time hotel pricing via Booking.com API — replace static price range strings with live rates
+- [ ] Restaurant / café affiliate listings per neighborhood (OpenTable, Resy, or TheFork)
+- [x] User review system — brief star rating + one-line tip per visited neighborhood
+- [x] Neighborhood photo gallery — user-submitted or curated additional images via Places API
 
 ## Technical Debt / Infrastructure
 
