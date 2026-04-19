@@ -59,6 +59,13 @@ export const neighborhoodDescriptions = pgTable("neighborhood_descriptions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Newsletter subscribers
+export const newsletterSubscribers = pgTable("newsletter_subscribers", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Affiliate click tracking — logs every outbound affiliate link click
 export const affiliateClicks = pgTable("affiliate_clicks", {
   id: serial("id").primaryKey(),

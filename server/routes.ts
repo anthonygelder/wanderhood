@@ -7,7 +7,7 @@ import OpenAI from "openai";
 
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./auth";
 import type { User, TripPurposeOption } from "@shared/schema";
-import { affiliateClicks } from "@shared/schema";
+import { affiliateClicks, newsletterSubscribers } from "@shared/schema";
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
 const openai = process.env.OPENAI_API_KEY
@@ -16,8 +16,6 @@ const openai = process.env.OPENAI_API_KEY
 
 const BASE_URL = process.env.BASE_URL || "https://wanderhood.com";
 
-// In-memory email list (replace with a real DB or email service later)
-const subscribedEmails: { email: string; createdAt: string }[] = [];
 
 export async function registerRoutes(
   httpServer: Server,
@@ -92,12 +90,20 @@ export async function registerRoutes(
       return res.status(400).json({ error: "Valid email required" });
     }
     const normalised = email.toLowerCase().trim();
-    if (subscribedEmails.some((s) => s.email === normalised)) {
-      return res.json({ message: "Already subscribed" });
+    try {
+      const { db } = await import("./db");
+      if (db) {
+        await db
+          .insert(newsletterSubscribers)
+          .values({ email: normalised })
+          .onConflictDoNothing();
+      }
+      console.log(`[subscribe] ${normalised}`);
+      res.json({ message: "Subscribed successfully" });
+    } catch (error) {
+      console.error("Error saving subscriber:", error);
+      res.status(500).json({ error: "Failed to subscribe" });
     }
-    subscribedEmails.push({ email: normalised, createdAt: new Date().toISOString() });
-    console.log(`[subscribe] New subscriber: ${normalised} (total: ${subscribedEmails.length})`);
-    res.json({ message: "Subscribed successfully" });
   });
   
   // Get all cities

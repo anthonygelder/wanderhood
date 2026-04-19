@@ -2,7 +2,7 @@
 
 ## Monetization: Quick Wins
 
-- [ ] Persist newsletter emails to PostgreSQL — currently stored in-memory and lost on every server restart
+- [x] Persist newsletter emails to PostgreSQL — newsletter_subscribers table, survives restarts
 - [ ] Integrate email service (Resend) for actual newsletter delivery and drip campaigns
 - [ ] Sign up for GetYourGuide affiliate program — GYG links already exist in the codebase but are not tracked (non-affiliate)
 - [x] Add travel insurance affiliate links (World Nomads or Cover Genius) — framework in place, swap PLACEHOLDER once approved
