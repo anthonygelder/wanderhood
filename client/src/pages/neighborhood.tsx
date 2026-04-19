@@ -6,6 +6,8 @@ import { Footer } from "@/components/footer";
 import { ScoreBar } from "@/components/score-bar";
 import { PhotoGallery } from "@/components/photo-gallery";
 import { ReviewSection } from "@/components/review-section";
+import { AirbnbCard } from "@/components/airbnb-card";
+import { TravelInsuranceCard } from "@/components/travel-insurance-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,6 +16,7 @@ import {
   MapPin, Train, Footprints, Shield, Utensils, Music, Users,
   Star, ExternalLink, Sparkles, ChevronRight,
 } from "lucide-react";
+import { trackClick } from "@/lib/tracking";
 import type { City, Neighborhood, Hotel } from "@shared/schema";
 
 const PRICE_LABELS: Record<string, string> = {
@@ -356,11 +359,15 @@ export default function NeighborhoodPage() {
                           </div>
                           <div className="flex items-center justify-between mt-2 gap-2">
                             <span className="text-base font-bold">{hotel.priceRange}</span>
-                            <Button size="sm" asChild>
-                              <a href={hotel.affiliateUrl || "#"} target="_blank" rel="noopener noreferrer">
-                                Book Now
-                                <ExternalLink className="w-3 h-3 ml-1" />
-                              </a>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                trackClick({ type: "hotel", url: hotel.affiliateUrl ?? "", neighborhoodId: neighborhood.id, cityId: neighborhood.cityId });
+                                window.open(hotel.affiliateUrl || "#", "_blank", "noopener,noreferrer");
+                              }}
+                            >
+                              Book Now
+                              <ExternalLink className="w-3 h-3 ml-1" />
                             </Button>
                           </div>
                         </div>
@@ -373,6 +380,17 @@ export default function NeighborhoodPage() {
                 </p>
               </section>
             )}
+            {/* Airbnb / Vrbo alternatives */}
+            <AirbnbCard
+              neighborhoodName={neighborhood.name}
+              cityName={city.name}
+              neighborhoodId={neighborhood.id}
+              cityId={neighborhood.cityId}
+            />
+
+            {/* Travel insurance */}
+            <TravelInsuranceCard cityName={city.name} cityId={neighborhood.cityId} />
+
             {/* Reviews */}
             <ReviewSection
               neighborhoodId={neighborhood.id}

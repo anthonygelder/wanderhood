@@ -5,11 +5,11 @@
 - [ ] Persist newsletter emails to PostgreSQL — currently stored in-memory and lost on every server restart
 - [ ] Integrate email service (Resend) for actual newsletter delivery and drip campaigns
 - [ ] Sign up for GetYourGuide affiliate program — GYG links already exist in the codebase but are not tracked (non-affiliate)
-- [ ] Add travel insurance affiliate links (World Nomads or Cover Genius) — 20–30% commission, fits naturally on neighborhood and hotel pages
-- [ ] Add Airbnb / Vrbo deeplinks per neighborhood alongside hotel listings — many travelers prefer apartments
-- [ ] Add eSIM affiliate (Airalo via Travelpayouts) — small card or banner on city pages, highly relevant for international travelers
-- [ ] Add flight search deeplinks (Skyscanner or Google Flights) to each city page — easy CTA ("Fly to Amsterdam")
-- [ ] Track affiliate link click-through rates — log clicks to DB or forward to analytics; currently zero visibility into which hotels or experiences convert
+- [x] Add travel insurance affiliate links (World Nomads or Cover Genius) — framework in place, swap PLACEHOLDER once approved
+- [x] Add Airbnb / Vrbo deeplinks per neighborhood alongside hotel listings — framework in place, swap PLACEHOLDER once approved
+- [x] Add eSIM affiliate (Airalo via Travelpayouts) — framework in place, swap PLACEHOLDER once approved
+- [x] Add flight search deeplinks (Skyscanner or Google Flights) to each city page — framework in place, swap PLACEHOLDER once approved
+- [x] Track affiliate link click-through rates — affiliate_clicks DB table + POST /api/track/click, wired to all new and existing hotel buttons
 
 ## Monetization: Subscription / Premium Tier
 

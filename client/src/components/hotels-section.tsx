@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExternalLink, Star, MapPin, Wifi, Coffee, Dumbbell, Tv, Car, Bath } from "lucide-react";
+import { trackClick } from "@/lib/tracking";
 import type { Neighborhood, Hotel } from "@shared/schema";
 
 interface HotelsSectionProps {
@@ -143,9 +144,12 @@ export function HotelsSection({ cityId, neighborhoods, selectedNeighborhood, onN
                     ))}
                   </div>
 
-                  <Button 
+                  <Button
                     className="w-full"
-                    onClick={() => window.open(hotel.affiliateUrl, "_blank")}
+                    onClick={() => {
+                      trackClick({ type: "hotel", url: hotel.affiliateUrl ?? "", neighborhoodId: hotel.neighborhoodId });
+                      window.open(hotel.affiliateUrl, "_blank");
+                    }}
                     data-testid={`button-book-${hotel.id}`}
                   >
                     Book on Booking.com

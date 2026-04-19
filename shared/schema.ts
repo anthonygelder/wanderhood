@@ -59,6 +59,17 @@ export const neighborhoodDescriptions = pgTable("neighborhood_descriptions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Affiliate click tracking — logs every outbound affiliate link click
+export const affiliateClicks = pgTable("affiliate_clicks", {
+  id: serial("id").primaryKey(),
+  type: varchar("type", { length: 50 }).notNull(), // 'hotel', 'experience', 'airbnb', 'vrbo', 'insurance', 'esim', 'flight'
+  url: text("url").notNull(),
+  neighborhoodId: varchar("neighborhood_id", { length: 255 }),
+  cityId: varchar("city_id", { length: 255 }),
+  userId: varchar("user_id", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // User reviews — star rating + optional one-line tip per neighborhood
 export const reviews = pgTable("reviews", {
   id: serial("id").primaryKey(),

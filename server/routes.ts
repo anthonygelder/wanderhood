@@ -7,6 +7,7 @@ import OpenAI from "openai";
 
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./auth";
 import type { User, TripPurposeOption } from "@shared/schema";
+import { affiliateClicks } from "@shared/schema";
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
 const openai = process.env.OPENAI_API_KEY
@@ -227,6 +228,27 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error generating recommendations:", error);
       res.status(500).json({ error: "Failed to generate recommendations" });
+    }
+  });
+
+  // Affiliate click tracking — fire-and-forget, always returns 200
+  app.post("/api/track/click", async (req: any, res) => {
+    res.json({ ok: true }); // respond immediately, don't block the user
+    const { type, url, neighborhoodId, cityId } = req.body;
+    if (!type || !url) return;
+    try {
+      const { db } = await import("./db");
+      if (db) {
+        await db.insert(affiliateClicks).values({
+          type: String(type).slice(0, 50),
+          url: String(url).slice(0, 2048),
+          neighborhoodId: neighborhoodId ? String(neighborhoodId) : null,
+          cityId: cityId ? String(cityId) : null,
+          userId: req.user ? (req.user as User).id : null,
+        });
+      }
+    } catch {
+      // silent — tracking should never break the user experience
     }
   });
 

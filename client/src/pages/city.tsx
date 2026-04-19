@@ -14,6 +14,8 @@ import { ExperiencesSection } from "@/components/experiences-section";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ResultsMapSection } from "@/components/results-map-section";
 import { FAQSection } from "@/components/faq-section";
+import { EsimBanner } from "@/components/esim-banner";
+import { FlightSearch } from "@/components/flight-search";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -202,6 +204,10 @@ export default function CityPage() {
       </Helmet>
       <Header cities={cities} />
       <CityHero city={city} onStartQuestionnaire={handleStartQuestionnaire} />
+      <div className="max-w-6xl mx-auto px-6 pt-4 space-y-2">
+        <EsimBanner countryName={city.country} cityId={city.id} />
+        <FlightSearch cityName={city.name} countryName={city.country} cityId={city.id} />
+      </div>
       <GoogleMap
         city={city}
         neighborhoods={neighborhoods}
