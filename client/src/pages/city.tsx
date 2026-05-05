@@ -64,7 +64,7 @@ export default function CityPage() {
     enabled: !!city,
   });
 
-  const { mutate, isPending, recommendations, hotels, reset } = useRecommendations(
+  const { mutate, isPending, recommendations, hotels, lastInput, explanations, isExplaining, explainLimitReached, reset } = useRecommendations(
     () => setViewState("results")
   );
 
@@ -105,6 +105,11 @@ export default function CityPage() {
           hotels={hotels}
           isLoading={isPending}
           onStartOver={handleStartOver}
+          shareInput={lastInput}
+          cities={cities}
+          explanations={explanations}
+          isExplaining={isExplaining}
+          explainLimitReached={explainLimitReached}
         />
         {recommendations.length > 0 && matchedCity && (
           <ResultsMapSection

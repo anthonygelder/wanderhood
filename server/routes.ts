@@ -3,15 +3,14 @@ import { createServer, type Server } from "http";
 import { rateLimit } from "express-rate-limit";
 import { storage } from "./storage";
 import { questionnaireInputSchema } from "@shared/schema";
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./auth";
 import type { User, TripPurposeOption } from "@shared/schema";
 import { affiliateClicks, newsletterSubscribers } from "@shared/schema";
 
-// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-const openai = process.env.OPENAI_API_KEY
-  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const anthropic = process.env.ANTHROPIC_API_KEY
+  ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   : null;
 
 const BASE_URL = process.env.BASE_URL || "https://wanderhood.com";
@@ -180,6 +179,16 @@ export async function registerRoutes(
       // Use authenticated user ID when available so logged-in users aren't penalised on shared IPs
       return req.user?.id || req.ip || "unknown";
     },
+  });
+
+  const aiExplainLimiter = rateLimit({
+    windowMs: 24 * 60 * 60 * 1000, // 24 hours
+    limit: 1,
+    message: { error: "Free AI limit reached. Sign in to continue.", code: "AI_LIMIT_REACHED" },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req: any) => req.ip || "unknown",
+    skip: (req: any) => !!req.user,
   });
 
   // Get experiences for a city
@@ -395,6 +404,53 @@ export async function registerRoutes(
     }
   });
 
+  // AI personalized match explanations
+  app.post("/api/ai/explain", aiExplainLimiter, async (req, res) => {
+    try {
+      const { recommendations, input } = req.body;
+      if (!recommendations?.length || !input) {
+        return res.status(400).json({ error: "Missing recommendations or input" });
+      }
+
+      if (!anthropic) {
+        return res.status(503).json({ error: "AI service not configured" });
+      }
+
+      const neighborhoodList = recommendations
+        .map((rec: any) =>
+          `- id: ${rec.neighborhood.id}, name: ${rec.neighborhood.name}, vibes: ${rec.neighborhood.vibe?.join(", ")}, walkability: ${rec.neighborhood.scores?.walkability}, safety: ${rec.neighborhood.scores?.safety}, food: ${rec.neighborhood.scores?.foodCoffeeDensity}, local feel: ${rec.neighborhood.scores?.localVibes}`
+        )
+        .join("\n");
+
+      const prompt = `A traveler is looking for neighborhoods with these preferences:
+- Budget: ${input.budget}
+- Vibes wanted: ${input.vibes?.join(", ")}
+- Travel style: ${input.travelStyle}
+- Trip type: ${input.tripPurpose}
+
+For each neighborhood below, write exactly ONE sentence (max 25 words) explaining why it matches this specific traveler. Be personal and direct — reference their actual preferences, not generic descriptions.
+
+Neighborhoods:
+${neighborhoodList}
+
+Respond with JSON only, using neighborhood IDs as keys: {"<id>": "<one sentence>", ...}`;
+
+      const response = await anthropic.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 300,
+        messages: [{ role: "user", content: prompt }],
+      });
+
+      const block = response.content[0];
+      const raw = block.type === "text" ? block.text : "{}";
+      const explanations = JSON.parse(raw);
+      res.json({ explanations });
+    } catch (error) {
+      console.error("Error generating AI explanations:", error);
+      res.status(500).json({ error: "Failed to generate explanations" });
+    }
+  });
+
   return httpServer;
 }
 
@@ -436,15 +492,16 @@ The traveler's preferences:
 
 Focus on what makes this neighborhood great for car-free exploration. Be specific about walking/transit options and local character. Keep it conversational and helpful.`;
 
-  if (!openai) {
+  if (!anthropic) {
     return `${neighborhoodName} is a vibrant neighborhood in ${cityName} known for its ${vibes.join(", ")} vibes.`;
   }
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-5",
+  const response = await anthropic.messages.create({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 200,
     messages: [{ role: "user", content: prompt }],
-    max_completion_tokens: 200,
   });
 
-  return response.choices[0].message.content || "";
+  const block = response.content[0];
+  return block.type === "text" ? block.text : "";
 }

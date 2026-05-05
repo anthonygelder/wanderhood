@@ -28,7 +28,7 @@
 
 ## New Features: High Impact
 
-- [ ] Share results link — generate a shareable URL encoding a recommendation session (key viral/social growth mechanic)
+- [x] Share results link — generate a shareable URL encoding a recommendation session (key viral/social growth mechanic)
 - [ ] Trip planner — save multiple neighborhoods across different cities into a named trip itinerary
 - [ ] "Similar neighborhoods" cross-city suggestions — "You liked Le Marais, you'll love Jordaan"
 - [ ] Real-time hotelé affiliate listings per neighborhood (OpenTable, Resy, or TheFork)

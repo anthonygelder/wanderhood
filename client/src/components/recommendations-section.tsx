@@ -2,8 +2,8 @@ import { NeighborhoodCard } from "@/components/neighborhood-card";
 import { HotelCard } from "@/components/hotel-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, RefreshCw } from "lucide-react";
-import type { Recommendation, Hotel } from "@shared/schema";
+import { ArrowLeft, RefreshCw, Share2, Check } from "lucide-react";
+import type { Recommendation, Hotel, QuestionnaireInput, City } from "@shared/schema";
 import { useState } from "react";
 
 interface RecommendationsSectionProps {
@@ -11,15 +11,49 @@ interface RecommendationsSectionProps {
   hotels: Record<string, Hotel[]>;
   isLoading?: boolean;
   onStartOver: () => void;
+  shareInput?: QuestionnaireInput | null;
+  cities?: City[];
+  explanations?: Record<string, string>;
+  isExplaining?: boolean;
+  explainLimitReached?: boolean;
 }
 
-export function RecommendationsSection({ 
-  recommendations, 
+function buildShareUrl(input: QuestionnaireInput, cities: City[]): string {
+  const city = cities.find((c) => c.id === input.cityId);
+  if (!city) return "";
+  const params = new URLSearchParams({
+    city: city.slug,
+    budget: input.budget,
+    vibes: input.vibes.join(","),
+    style: input.travelStyle,
+    purpose: input.tripPurpose,
+  });
+  return `${window.location.origin}/results?${params}`;
+}
+
+export function RecommendationsSection({
+  recommendations,
   hotels,
   isLoading,
-  onStartOver 
+  onStartOver,
+  shareInput,
+  cities = [],
+  explanations = {},
+  isExplaining = false,
+  explainLimitReached = false,
 }: RecommendationsSectionProps) {
   const [expandedHotels, setExpandedHotels] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = () => {
+    if (!shareInput) return;
+    const url = buildShareUrl(shareInput, cities);
+    if (!url) return;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   const handleViewHotels = (neighborhoodId: string) => {
     setExpandedHotels(expandedHotels === neighborhoodId ? null : neighborhoodId);
@@ -83,10 +117,18 @@ export function RecommendationsSection({
               Based on your preferences, here are the best neighborhoods for you
             </p>
           </div>
-          <Button variant="outline" onClick={onStartOver} data-testid="button-start-over">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Start Over
-          </Button>
+          <div className="flex gap-2">
+            {shareInput && (
+              <Button variant="outline" onClick={handleShare}>
+                {copied ? <Check className="w-4 h-4 mr-2 text-green-500" /> : <Share2 className="w-4 h-4 mr-2" />}
+                {copied ? "Copied!" : "Share"}
+              </Button>
+            )}
+            <Button variant="outline" onClick={onStartOver} data-testid="button-start-over">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Start Over
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -96,6 +138,9 @@ export function RecommendationsSection({
                 recommendation={rec}
                 onViewHotels={handleViewHotels}
                 onExploreMap={handleExploreMap}
+                matchExplanation={explanations[rec.neighborhood.id]}
+                isExplaining={isExplaining}
+                explainLimitReached={explainLimitReached}
               />
               
               {expandedHotels === rec.neighborhood.id && hotels[rec.neighborhood.id] && (

@@ -14,6 +14,7 @@ import FavoritesPage from "@/pages/favorites";
 import CityGuidePage from "@/pages/city-guide";
 import ComparisonPage from "@/pages/comparison";
 import TripTypePage from "@/pages/trip-type";
+import SharedResultsPage from "@/pages/shared-results";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/guides/:citySlug/:type" component={CityGuidePage} />
       <Route path="/compare/:citySlug/:n1Slug/:n2Slug" component={ComparisonPage} />
       <Route path="/neighborhoods/:purpose" component={TripTypePage} />
+      <Route path="/results" component={SharedResultsPage} />
       <Route component={NotFound} />
     </Switch>
   );

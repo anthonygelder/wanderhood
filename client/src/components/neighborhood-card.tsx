@@ -1,17 +1,21 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ScoreBar } from "@/components/score-bar";
-import { MapPin, ExternalLink, Footprints, Train, Shield, Utensils, Music, Users, Hotel } from "lucide-react";
+import { MapPin, ExternalLink, Footprints, Train, Shield, Utensils, Music, Users, Hotel, Sparkles } from "lucide-react";
 import type { Recommendation } from "@shared/schema";
 
 interface NeighborhoodCardProps {
   recommendation: Recommendation;
   onViewHotels: (neighborhoodId: string) => void;
   onExploreMap: (neighborhoodId: string) => void;
+  matchExplanation?: string;
+  isExplaining?: boolean;
+  explainLimitReached?: boolean;
 }
 
-export function NeighborhoodCard({ recommendation, onViewHotels, onExploreMap }: NeighborhoodCardProps) {
+export function NeighborhoodCard({ recommendation, onViewHotels, onExploreMap, matchExplanation, isExplaining, explainLimitReached }: NeighborhoodCardProps) {
   const { neighborhood, matchScore, rank, matchReasons } = recommendation;
   const { scores } = neighborhood;
 
@@ -92,9 +96,23 @@ export function NeighborhoodCard({ recommendation, onViewHotels, onExploreMap }:
           </p>
         )}
 
-        {matchReasons.length > 0 && (
-          <div className="bg-muted/50 rounded-md p-3">
-            <p className="text-xs font-medium text-muted-foreground mb-2">Why this matches you:</p>
+        <div className="bg-muted/50 rounded-md p-3">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Sparkles className="w-3 h-3 text-primary" />
+            <p className="text-xs font-medium text-muted-foreground">Why this matches you</p>
+          </div>
+          {isExplaining ? (
+            <div className="space-y-1.5">
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-4/5" />
+            </div>
+          ) : matchExplanation ? (
+            <p className="text-sm leading-relaxed">{matchExplanation}</p>
+          ) : explainLimitReached ? (
+            <p className="text-xs text-muted-foreground">
+              <a href="/api/auth/google" className="text-primary underline underline-offset-2">Sign in</a> to unlock personalized AI insights.
+            </p>
+          ) : matchReasons.length > 0 ? (
             <div className="flex flex-wrap gap-1.5">
               {matchReasons.slice(0, 4).map((reason, i) => (
                 <Badge key={i} variant="secondary" size="sm" className="text-xs">
@@ -102,8 +120,8 @@ export function NeighborhoodCard({ recommendation, onViewHotels, onExploreMap }:
                 </Badge>
               ))}
             </div>
-          </div>
-        )}
+          ) : null}
+        </div>
 
         <div className="flex flex-col gap-2 pt-2">
           <Button

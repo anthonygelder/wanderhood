@@ -24,7 +24,7 @@ export default function Home() {
     queryKey: ["/api/cities"],
   });
 
-  const { mutate, isPending, recommendations, hotels, reset } = useRecommendations(
+  const { mutate, isPending, recommendations, hotels, explanations, isExplaining, explainLimitReached, reset } = useRecommendations(
     () => setViewState("results")
   );
 
@@ -59,6 +59,9 @@ export default function Home() {
           hotels={hotels}
           isLoading={isPending}
           onStartOver={handleStartOver}
+          explanations={explanations}
+          isExplaining={isExplaining}
+          explainLimitReached={explainLimitReached}
         />
         {selectedCity && (
           <div className="text-center py-4">
