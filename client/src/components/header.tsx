@@ -41,7 +41,7 @@ export function Header({ cities, selectedCity, onCityChange, transparent = false
 
   return (
     <header
-      className={`sticky top-0 z-50 h-16 ${
+      className={`sticky top-0 z-50 min-h-16 pt-[env(safe-area-inset-top)] ${
         transparent
           ? "bg-transparent"
           : "bg-background/80 backdrop-blur-lg border-b border-border"

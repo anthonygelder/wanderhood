@@ -26,7 +26,7 @@ export function HeroSection({ onStartQuestionnaire }: HeroSectionProps) {
             <img src={logoIcon} alt="Wanderhood" className="w-16 h-16 md:w-24 md:h-24" />
           </div>
 
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
+          <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold text-white leading-tight">
             Find Your Perfect
             <br />
             <span className="font-serif italic">Neighborhood</span>

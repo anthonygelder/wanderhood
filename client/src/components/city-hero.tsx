@@ -26,7 +26,7 @@ export function CityHero({ city, onStartQuestionnaire }: CityHeroProps) {
             <span className="text-sm text-white font-medium">{city.country}</span>
           </div>
           
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
+          <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold text-white leading-tight">
             Where to Stay in
             <br />
             <span className="font-serif italic">{city.name}</span>

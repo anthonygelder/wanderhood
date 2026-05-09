@@ -62,7 +62,8 @@ export function RecommendationsSection({
   const handleExploreMap = (neighborhoodId: string) => {
     const section = document.getElementById("map-section");
     if (section) {
-      section.scrollIntoView({ behavior: "smooth" });
+      const top = section.getBoundingClientRect().top + window.scrollY - 64;
+      window.scrollTo({ top, behavior: "smooth" });
     }
   };
 

@@ -173,9 +173,9 @@ export function NeighborhoodComparisonModal({
             </Button>
 
             <ScrollArea className="flex-1">
-              <div className="flex gap-4 pb-4">
+              <div className="flex flex-col md:flex-row gap-4 pb-4">
                 {selectedNeighborhoods.map((neighborhood) => (
-                  <Card key={neighborhood.id} className="flex-1 min-w-[250px] p-4" data-testid={`compare-card-${neighborhood.slug}`}>
+                  <Card key={neighborhood.id} className="w-full md:flex-1 p-4" data-testid={`compare-card-${neighborhood.slug}`}>
                     <div 
                       className="aspect-video rounded-md bg-cover bg-center mb-3"
                       style={{ backgroundImage: `url(${neighborhood.heroImage})` }}

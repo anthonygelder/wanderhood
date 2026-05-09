@@ -26,8 +26,61 @@ export function NeighborhoodComparison({ neighborhoods, citySlug }: Neighborhood
           <NeighborhoodComparisonModal neighborhoods={neighborhoods} />
         </div>
 
-        <p className="text-xs text-muted-foreground text-center mb-3 md:hidden">← Swipe to compare →</p>
-        <ScrollArea className="w-full">
+        {/* Mobile card layout */}
+        <div className="md:hidden space-y-3">
+          {neighborhoods.map((n) => (
+            <div key={n.id} className="border border-border rounded-md p-4 bg-card" data-testid={`row-neighborhood-${n.slug}`}>
+              <div className="flex items-center gap-3 mb-3">
+                <div
+                  className="w-12 h-12 rounded-md bg-cover bg-center flex-shrink-0"
+                  style={{ backgroundImage: `url(${n.heroImage})` }}
+                />
+                <div className="min-w-0">
+                  {citySlug ? (
+                    <Link href={`/city/${citySlug}/${n.slug}`}>
+                      <a className="font-semibold hover:text-primary hover:underline underline-offset-2 transition-colors">
+                        {n.name}
+                      </a>
+                    </Link>
+                  ) : (
+                    <p className="font-semibold">{n.name}</p>
+                  )}
+                  <div className="flex gap-1 mt-1 flex-wrap">
+                    {n.vibe.slice(0, 2).map((v) => (
+                      <Badge key={v} variant="secondary" size="sm">{v}</Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {[
+                  { label: "Walkability", score: n.scores.walkability },
+                  { label: "Transit", score: n.scores.transitConnectivity },
+                  { label: "Safety", score: n.scores.safety },
+                  { label: "Food/Coffee", score: n.scores.foodCoffeeDensity },
+                  { label: "Nightlife", score: n.scores.nightlife },
+                ].map(({ label, score }) => (
+                  <div key={label} className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground w-20 flex-shrink-0">{label}</span>
+                    <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-primary rounded-full" style={{ width: `${score}%` }} />
+                    </div>
+                    <span className="text-xs font-medium w-6 text-right">{score}</span>
+                  </div>
+                ))}
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="text-xs text-muted-foreground w-20 flex-shrink-0">Price</span>
+                  <Badge variant={n.priceLevel === "budget" ? "secondary" : n.priceLevel === "luxury" ? "default" : "outline"} size="sm">
+                    {n.priceLevel}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop table */}
+        <ScrollArea className="w-full hidden md:block">
           <div className="min-w-[800px]">
             <table className="w-full" data-testid="table-comparison">
               <thead>
