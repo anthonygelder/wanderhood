@@ -243,7 +243,7 @@ export function Questionnaire({ cities, defaultCityId, onComplete, onCancel }: Q
               <h2 className="text-2xl font-semibold">What's your ideal vibe?</h2>
               <p className="text-muted-foreground mt-1">Select up to 3 that match your style</p>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               {vibeOptions.map((option) => (
                 <button
                   key={option.value}

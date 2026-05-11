@@ -139,7 +139,7 @@ export default function FavoritesPage() {
               return (
                 <Card
                   key={favorite.id}
-                  className="p-4 flex items-center gap-4"
+                  className="p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4"
                   data-testid={`card-favorite-${favorite.neighborhoodId}`}
                 >
                   <div className="flex-1">

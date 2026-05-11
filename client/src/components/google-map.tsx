@@ -451,7 +451,7 @@ export function GoogleMap({
       )}
 
       {/* Map (hidden on mobile when list view active) */}
-      <div className={`relative h-[360px] md:h-[600px] lg:h-[700px] ${mobileListView ? "hidden md:block" : ""}`}>
+      <div className={`relative h-[50vh] md:h-[600px] lg:h-[700px] ${mobileListView ? "hidden md:block" : ""}`}>
       <div ref={mapRef} className="h-full w-full rounded-lg" />
 
       {/* Neighborhood info card — DESKTOP ONLY: overlaid on map */}
