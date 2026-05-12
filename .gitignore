@@ -9,3 +9,6 @@ vite.config.ts.*
 scripts/.hotel-cache.json
 scripts/.photo-cache.json
 scripts/.geocode-cache.json
+# Capacitor
+ios/App/App/public
+android/app/src/main/assets/public

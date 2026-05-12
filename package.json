@@ -15,10 +15,17 @@
     "images:update": "tsx --env-file=.env scripts/generate-neighborhood-images.ts --force",
     "db:seed": "tsx --env-file=.env scripts/seed.ts",
     "db:seed:force": "tsx --env-file=.env scripts/seed.ts --force",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:mobile": "vite build && npx cap sync",
+    "cap:sync": "npx cap sync",
+    "cap:ios": "npx cap open ios",
+    "cap:android": "npx cap open android"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
+    "@capacitor/android": "^8.3.3",
+    "@capacitor/core": "^8.3.3",
+    "@capacitor/ios": "^8.3.3",
     "@googlemaps/js-api-loader": "^2.0.2",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
@@ -94,6 +101,7 @@
     "zod-validation-error": "^3.4.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.3.3",
     "@replit/vite-plugin-cartographer": "^0.4.4",
     "@replit/vite-plugin-dev-banner": "^0.1.1",
     "@replit/vite-plugin-runtime-error-modal": "^0.0.3",
