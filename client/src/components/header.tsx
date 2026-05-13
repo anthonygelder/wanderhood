@@ -5,6 +5,8 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { useTheme } from "@/lib/theme";
 import logoWordmarkDark from "@/assets/wanderhood-logo-header.svg";
 import logoWordmarkLight from "@/assets/wanderhood-logo-header-light.svg";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 
 import { useState } from "react";
 import {
@@ -27,6 +29,14 @@ export function Header({ cities, selectedCity, onCityChange, transparent = false
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [location, navigate] = useLocation();
   const { theme } = useTheme();
+  const { t, i18n: i18nInstance } = useTranslation();
+  const currentLang = i18nInstance.language;
+
+  const toggleLang = () => {
+    const next = currentLang.startsWith("es") ? "en" : "es";
+    i18n.changeLanguage(next);
+    localStorage.setItem("lang", next);
+  };
   const logoWordmark = theme === "dark" ? logoWordmarkDark : logoWordmarkLight;
 
   const handleCitySelect = (citySlug: string) => {
@@ -63,7 +73,7 @@ export function Header({ cities, selectedCity, onCityChange, transparent = false
           {cities && cities.length > 0 && (
             <Select value={selectedCity} onValueChange={handleCitySelect}>
               <SelectTrigger className="w-[180px]" data-testid="select-city">
-                <SelectValue placeholder="Select a city" />
+                <SelectValue placeholder={t("header.selectCity")} />
               </SelectTrigger>
               <SelectContent>
                 {cities.map((city) => (
@@ -85,6 +95,15 @@ export function Header({ cities, selectedCity, onCityChange, transparent = false
         </nav>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleLang}
+            className="text-xs font-semibold px-2"
+            data-testid="button-lang-toggle"
+          >
+            {currentLang.startsWith("es") ? "EN" : "ES"}
+          </Button>
           <ThemeToggle />
           
           <Button
@@ -104,7 +123,7 @@ export function Header({ cities, selectedCity, onCityChange, transparent = false
           {cities && cities.length > 0 && (
             <Select value={selectedCity} onValueChange={handleCitySelect}>
               <SelectTrigger className="w-full" data-testid="select-city-mobile">
-                <SelectValue placeholder="Select a city" />
+                <SelectValue placeholder={t("header.selectCity")} />
               </SelectTrigger>
               <SelectContent>
                 {cities.map((city) => (
@@ -117,8 +136,11 @@ export function Header({ cities, selectedCity, onCityChange, transparent = false
           )}
           
           <Link href="/cities" data-testid="link-cities-mobile">
-            <span className="block text-sm font-medium py-2">Cities</span>
+            <span className="block text-sm font-medium py-2">{t("header.exploreCities")}</span>
           </Link>
+          <Button variant="outline" size="sm" onClick={toggleLang} className="text-xs font-semibold">
+            {currentLang.startsWith("es") ? "English" : "Español"}
+          </Button>
         </div>
       )}
     </header>

@@ -1,0 +1,168 @@
+{
+  "header": {
+    "selectCity": "Select a city",
+    "exploreCities": "Explore Cities",
+    "favorites": "Favorites",
+    "signIn": "Sign In",
+    "signOut": "Sign Out"
+  },
+  "hero": {
+    "title": "Find Your Perfect",
+    "titleEmphasis": "Neighborhood",
+    "description": "Discover walkable neighborhoods with amazing transit, local food scenes, and authentic vibes. No car required.",
+    "cta": "Where Should I Stay?",
+    "exploreCities": "Explore Cities",
+    "stats": {
+      "cities": "cities",
+      "neighborhoods": "walkable neighborhoods",
+      "hotels": "hotels"
+    }
+  },
+  "features": {
+    "title": "Everything You Need to Choose",
+    "description": "We analyze neighborhoods across multiple dimensions so you can find the perfect match for your travel style.",
+    "items": {
+      "walkability": { "title": "Walkability Scores", "description": "Know exactly how walkable each neighborhood is before you book." },
+      "transit": { "title": "Transit Connectivity", "description": "Find areas near metro stations and bus lines for easy exploration." },
+      "safety": { "title": "Safety Ratings", "description": "Make informed decisions with our neighborhood safety data." },
+      "food": { "title": "Food & Coffee Density", "description": "Discover neighborhoods packed with cafes, restaurants, and local eats." },
+      "local": { "title": "Local vs Tourist Feel", "description": "Choose between authentic local vibes or tourist-friendly areas." },
+      "ai": { "title": "AI-Powered Insights", "description": "Get personalized neighborhood descriptions tailored to your preferences." }
+    }
+  },
+  "cities": {
+    "title": "Popular Destinations",
+    "description": "Explore walkable neighborhoods in these car-free friendly cities",
+    "showAll": "Show all {{count}} cities",
+    "browseAll": "Browse & search all cities →"
+  },
+  "emailCapture": {
+    "title": "Get city guides in your inbox",
+    "description": "Hand-picked walkable neighborhoods, hidden gems, and car-free travel tips. No spam, ever.",
+    "placeholder": "your@email.com",
+    "subscribe": "Subscribe",
+    "subscribing": "Subscribing…",
+    "success": "You're in! We'll be in touch soon.",
+    "noSpam": "No spam. Unsubscribe anytime."
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "description": "Everything you need to know about using Wanderhood",
+    "items": [
+      {
+        "question": "How do you calculate walkability scores?",
+        "answer": "Our walkability scores are based on multiple factors including pedestrian infrastructure, proximity to daily amenities, street connectivity, and terrain. We combine data from various sources and validate with local insights to provide accurate scores."
+      },
+      {
+        "question": "What does 'transit connectivity' mean?",
+        "answer": "Transit connectivity measures how well a neighborhood is served by public transportation. This includes proximity to metro/subway stations, bus routes, frequency of service, and connections to other parts of the city."
+      },
+      {
+        "question": "How do you determine safety ratings?",
+        "answer": "Safety ratings are derived from official crime statistics, local government data, and traveler reviews. We focus on metrics relevant to tourists, such as street crime rates and general neighborhood safety reputation."
+      },
+      {
+        "question": "Do I really not need a car in these neighborhoods?",
+        "answer": "Yes! All neighborhoods we recommend are specifically chosen because they allow you to get around comfortably without a car. Whether you prefer walking or public transit, you'll be able to reach major attractions and daily necessities easily."
+      },
+      {
+        "question": "How do hotel affiliate links work?",
+        "answer": "When you click on a hotel link and make a booking, we may earn a small commission at no extra cost to you. This helps us keep Wanderhood free and continue providing neighborhood recommendations."
+      },
+      {
+        "question": "Can I trust the AI-generated descriptions?",
+        "answer": "Our AI descriptions are based on real data about each neighborhood and are designed to give you an authentic feel for the area. They're crafted to highlight what makes each neighborhood unique for car-free travelers."
+      }
+    ]
+  },
+  "footer": {
+    "tagline": "Find the perfect car-free neighborhood for your next adventure. We help travelers discover walkable areas with great transit, amazing food, and authentic local vibes.",
+    "popularCities": "Popular Cities",
+    "resources": "Resources",
+    "company": "Company",
+    "copyright": "© {{year}} Wanderhood. All rights reserved.",
+    "affiliateDisclosure": "Affiliate Disclosure: We may earn commissions from hotel bookings made through our links.",
+    "links": {
+      "howItWorks": "How It Works",
+      "carFreeGuide": "Car-Free Travel Guide",
+      "blog": "Blog",
+      "faq": "FAQ",
+      "about": "About Us",
+      "contact": "Contact",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service"
+    }
+  },
+  "questionnaire": {
+    "stepOf": "Step {{step}} of {{total}}",
+    "cancel": "Cancel",
+    "back": "Back",
+    "next": "Next",
+    "findMyNeighborhood": "Find My Neighborhood",
+    "steps": {
+      "city": {
+        "title": "Which city are you visiting?",
+        "subtitle": "Select your destination",
+        "searchPlaceholder": "Search cities…"
+      },
+      "budget": {
+        "title": "What's your budget?",
+        "subtitle": "This helps us find the right neighborhood for you"
+      },
+      "vibe": {
+        "title": "What's your ideal vibe?",
+        "subtitle": "Select up to 3 that match your style"
+      },
+      "travelStyle": {
+        "title": "How do you like to get around?",
+        "subtitle": "Your travel style matters for neighborhood selection"
+      },
+      "tripPurpose": {
+        "title": "What's the purpose of your trip?",
+        "subtitle": "This helps us understand your needs"
+      }
+    },
+    "budget": {
+      "budget": { "label": "Budget", "description": "Hostels & budget hotels" },
+      "moderate": { "label": "Moderate", "description": "Mid-range comfort" },
+      "upscale": { "label": "Upscale", "description": "Higher-end stays" },
+      "luxury": { "label": "Luxury", "description": "Premium experiences" }
+    },
+    "vibe": {
+      "quiet": "Quiet & Peaceful",
+      "artsy": "Artsy & Creative",
+      "hip": "Hip & Trendy",
+      "historic": "Historic & Cultural",
+      "foodie": "Foodie Paradise",
+      "party": "Party Scene",
+      "waterfront": "Waterfront",
+      "family": "Family-Friendly"
+    },
+    "travelStyle": {
+      "walk": { "label": "Walk Everywhere", "description": "I love exploring on foot" },
+      "transit": { "label": "Public Transit", "description": "Metro & buses are my thing" },
+      "mixed": { "label": "Mix of Both", "description": "Walk when close, transit for far" }
+    },
+    "tripPurpose": {
+      "solo": { "label": "Solo Adventure", "description": "Exploring on my own" },
+      "couples": { "label": "Couples Getaway", "description": "Romantic weekend" },
+      "remote_work": { "label": "Remote Work", "description": "Working while traveling" },
+      "foodie_trip": { "label": "Foodie Trip", "description": "Eating my way through" },
+      "family": { "label": "Family Trip", "description": "Traveling with kids" },
+      "friends": { "label": "Friends Trip", "description": "Group adventure" }
+    }
+  },
+  "recommendations": {
+    "title": "Your Top Matches",
+    "description": "Based on your preferences, here are the best neighborhoods for you",
+    "startOver": "Start Over",
+    "share": "Share",
+    "copied": "Copied!",
+    "noMatches": {
+      "title": "No matches found",
+      "description": "We couldn't find neighborhoods matching your criteria. Try adjusting your preferences."
+    },
+    "hotelsIn": "Hotels in {{name}}",
+    "exploreFullGuide": "Explore the full {{city}} guide →"
+  }
+}

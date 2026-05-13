@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, RefreshCw, Share2, Check } from "lucide-react";
 import type { Recommendation, Hotel, QuestionnaireInput, City } from "@shared/schema";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface RecommendationsSectionProps {
   recommendations: Recommendation[];
@@ -42,6 +43,7 @@ export function RecommendationsSection({
   isExplaining = false,
   explainLimitReached = false,
 }: RecommendationsSectionProps) {
+  const { t } = useTranslation();
   const [expandedHotels, setExpandedHotels] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -95,13 +97,13 @@ export function RecommendationsSection({
     return (
       <section className="py-16 md:py-24 bg-background" data-testid="recommendations-empty">
         <div className="max-w-2xl mx-auto px-6 text-center">
-          <h2 className="text-3xl font-semibold mb-4">No matches found</h2>
+          <h2 className="text-3xl font-semibold mb-4">{t("recommendations.noMatches.title")}</h2>
           <p className="text-muted-foreground mb-8">
-            We couldn't find neighborhoods matching your criteria. Try adjusting your preferences.
+            {t("recommendations.noMatches.description")}
           </p>
           <Button onClick={onStartOver} data-testid="button-start-over-empty">
             <RefreshCw className="w-4 h-4 mr-2" />
-            Start Over
+            {t("recommendations.startOver")}
           </Button>
         </div>
       </section>
@@ -113,21 +115,21 @@ export function RecommendationsSection({
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-12">
           <div>
-            <h2 className="text-3xl md:text-4xl font-semibold">Your Top Matches</h2>
+            <h2 className="text-3xl md:text-4xl font-semibold">{t("recommendations.title")}</h2>
             <p className="text-muted-foreground mt-2">
-              Based on your preferences, here are the best neighborhoods for you
+              {t("recommendations.description")}
             </p>
           </div>
           <div className="flex gap-2">
             {shareInput && (
               <Button variant="outline" onClick={handleShare}>
                 {copied ? <Check className="w-4 h-4 mr-2 text-green-500" /> : <Share2 className="w-4 h-4 mr-2" />}
-                {copied ? "Copied!" : "Share"}
+                {copied ? t("recommendations.copied") : t("recommendations.share")}
               </Button>
             )}
             <Button variant="outline" onClick={onStartOver} data-testid="button-start-over">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Start Over
+              {t("recommendations.startOver")}
             </Button>
           </div>
         </div>
@@ -147,7 +149,7 @@ export function RecommendationsSection({
               {expandedHotels === rec.neighborhood.id && hotels[rec.neighborhood.id] && (
                 <div className="space-y-3 animate-in slide-in-from-top-2 duration-300">
                   <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                    Hotels in {rec.neighborhood.name}
+                    {t("recommendations.hotelsIn", { name: rec.neighborhood.name })}
                   </h4>
                   {hotels[rec.neighborhood.id].map((hotel) => (
                     <HotelCard key={hotel.id} hotel={hotel} />

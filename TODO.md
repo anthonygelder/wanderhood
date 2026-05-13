@@ -40,7 +40,7 @@
 - [x] Dedicated neighborhood vs. neighborhood comparison pages (SEO landing pages, not just the modal)
 - [x] City-type guide pages — "Digital nomad guide to Lisbon", "Romantic weekend in Paris"
 - [x] Improve JSON-LD structured data — add `TouristAttraction` and `LodgingBusiness` schema types
-- [ ] Multilingual support — Spanish first (large addressable market, same codebase)
+- [x] Multilingual support — Spanish first (large addressable market, same codebase)
 
 ## New Features: UX & Retention
 

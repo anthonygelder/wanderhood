@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -81,40 +82,8 @@ function OptionCard({ icon, label, description, selected, onClick }: OptionCardP
   );
 }
 
-const budgetOptions: { value: BudgetOption; label: string; description: string; icon: React.ReactNode }[] = [
-  { value: "budget", label: "Budget", description: "Hostels & budget hotels", icon: <Wallet className="w-5 h-5" /> },
-  { value: "moderate", label: "Moderate", description: "Mid-range comfort", icon: <Wallet className="w-5 h-5" /> },
-  { value: "upscale", label: "Upscale", description: "Higher-end stays", icon: <Wallet className="w-5 h-5" /> },
-  { value: "luxury", label: "Luxury", description: "Premium experiences", icon: <Wallet className="w-5 h-5" /> },
-];
-
-const vibeOptions: { value: VibeOption; label: string; icon: React.ReactNode }[] = [
-  { value: "quiet", label: "Quiet & Peaceful", icon: <TreePine className="w-5 h-5" /> },
-  { value: "artsy", label: "Artsy & Creative", icon: <Palette className="w-5 h-5" /> },
-  { value: "hip", label: "Hip & Trendy", icon: <Coffee className="w-5 h-5" /> },
-  { value: "historic", label: "Historic & Cultural", icon: <History className="w-5 h-5" /> },
-  { value: "foodie", label: "Foodie Paradise", icon: <Utensils className="w-5 h-5" /> },
-  { value: "party", label: "Party Scene", icon: <Music className="w-5 h-5" /> },
-  { value: "waterfront", label: "Waterfront", icon: <Waves className="w-5 h-5" /> },
-  { value: "family", label: "Family-Friendly", icon: <Baby className="w-5 h-5" /> },
-];
-
-const travelStyleOptions: { value: TravelStyleOption; label: string; description: string; icon: React.ReactNode }[] = [
-  { value: "walk", label: "Walk Everywhere", description: "I love exploring on foot", icon: <Footprints className="w-5 h-5" /> },
-  { value: "transit", label: "Public Transit", description: "Metro & buses are my thing", icon: <Train className="w-5 h-5" /> },
-  { value: "mixed", label: "Mix of Both", description: "Walk when close, transit for far", icon: <Shuffle className="w-5 h-5" /> },
-];
-
-const tripPurposeOptions: { value: TripPurposeOption; label: string; description: string; icon: React.ReactNode }[] = [
-  { value: "solo", label: "Solo Adventure", description: "Exploring on my own", icon: <User className="w-5 h-5" /> },
-  { value: "couples", label: "Couples Getaway", description: "Romantic weekend", icon: <Heart className="w-5 h-5" /> },
-  { value: "remote_work", label: "Remote Work", description: "Working while traveling", icon: <Laptop className="w-5 h-5" /> },
-  { value: "foodie_trip", label: "Foodie Trip", description: "Eating my way through", icon: <Utensils className="w-5 h-5" /> },
-  { value: "family", label: "Family Trip", description: "Traveling with kids", icon: <Baby className="w-5 h-5" /> },
-  { value: "friends", label: "Friends Trip", description: "Group adventure", icon: <PartyPopper className="w-5 h-5" /> },
-];
-
 export function Questionnaire({ cities, defaultCityId, onComplete, onCancel }: QuestionnaireProps) {
+  const { t } = useTranslation();
   const [step, setStep] = useState(defaultCityId ? 1 : 0);
   const [cityId, setCityId] = useState<string>(defaultCityId || "");
   const [citySearch, setCitySearch] = useState("");
@@ -122,6 +91,36 @@ export function Questionnaire({ cities, defaultCityId, onComplete, onCancel }: Q
   const [vibes, setVibes] = useState<VibeOption[]>([]);
   const [travelStyle, setTravelStyle] = useState<TravelStyleOption | null>(null);
   const [tripPurpose, setTripPurpose] = useState<TripPurposeOption | null>(null);
+
+  const budgetOptions = [
+    { value: "budget" as BudgetOption, label: t("questionnaire.budget.budget.label"), description: t("questionnaire.budget.budget.description"), icon: <Wallet className="w-5 h-5" /> },
+    { value: "moderate" as BudgetOption, label: t("questionnaire.budget.moderate.label"), description: t("questionnaire.budget.moderate.description"), icon: <Wallet className="w-5 h-5" /> },
+    { value: "upscale" as BudgetOption, label: t("questionnaire.budget.upscale.label"), description: t("questionnaire.budget.upscale.description"), icon: <Wallet className="w-5 h-5" /> },
+    { value: "luxury" as BudgetOption, label: t("questionnaire.budget.luxury.label"), description: t("questionnaire.budget.luxury.description"), icon: <Wallet className="w-5 h-5" /> },
+  ];
+  const vibeOptions = [
+    { value: "quiet" as VibeOption, label: t("questionnaire.vibe.quiet"), icon: <TreePine className="w-5 h-5" /> },
+    { value: "artsy" as VibeOption, label: t("questionnaire.vibe.artsy"), icon: <Palette className="w-5 h-5" /> },
+    { value: "hip" as VibeOption, label: t("questionnaire.vibe.hip"), icon: <Coffee className="w-5 h-5" /> },
+    { value: "historic" as VibeOption, label: t("questionnaire.vibe.historic"), icon: <History className="w-5 h-5" /> },
+    { value: "foodie" as VibeOption, label: t("questionnaire.vibe.foodie"), icon: <Utensils className="w-5 h-5" /> },
+    { value: "party" as VibeOption, label: t("questionnaire.vibe.party"), icon: <Music className="w-5 h-5" /> },
+    { value: "waterfront" as VibeOption, label: t("questionnaire.vibe.waterfront"), icon: <Waves className="w-5 h-5" /> },
+    { value: "family" as VibeOption, label: t("questionnaire.vibe.family"), icon: <Baby className="w-5 h-5" /> },
+  ];
+  const travelStyleOptions = [
+    { value: "walk" as TravelStyleOption, label: t("questionnaire.travelStyle.walk.label"), description: t("questionnaire.travelStyle.walk.description"), icon: <Footprints className="w-5 h-5" /> },
+    { value: "transit" as TravelStyleOption, label: t("questionnaire.travelStyle.transit.label"), description: t("questionnaire.travelStyle.transit.description"), icon: <Train className="w-5 h-5" /> },
+    { value: "mixed" as TravelStyleOption, label: t("questionnaire.travelStyle.mixed.label"), description: t("questionnaire.travelStyle.mixed.description"), icon: <Shuffle className="w-5 h-5" /> },
+  ];
+  const tripPurposeOptions = [
+    { value: "solo" as TripPurposeOption, label: t("questionnaire.tripPurpose.solo.label"), description: t("questionnaire.tripPurpose.solo.description"), icon: <User className="w-5 h-5" /> },
+    { value: "couples" as TripPurposeOption, label: t("questionnaire.tripPurpose.couples.label"), description: t("questionnaire.tripPurpose.couples.description"), icon: <Heart className="w-5 h-5" /> },
+    { value: "remote_work" as TripPurposeOption, label: t("questionnaire.tripPurpose.remote_work.label"), description: t("questionnaire.tripPurpose.remote_work.description"), icon: <Laptop className="w-5 h-5" /> },
+    { value: "foodie_trip" as TripPurposeOption, label: t("questionnaire.tripPurpose.foodie_trip.label"), description: t("questionnaire.tripPurpose.foodie_trip.description"), icon: <Utensils className="w-5 h-5" /> },
+    { value: "family" as TripPurposeOption, label: t("questionnaire.tripPurpose.family.label"), description: t("questionnaire.tripPurpose.family.description"), icon: <Baby className="w-5 h-5" /> },
+    { value: "friends" as TripPurposeOption, label: t("questionnaire.tripPurpose.friends.label"), description: t("questionnaire.tripPurpose.friends.description"), icon: <PartyPopper className="w-5 h-5" /> },
+  ];
 
   const totalSteps = 5;
   const progress = ((step + 1) / totalSteps) * 100;
@@ -176,9 +175,9 @@ export function Questionnaire({ cities, defaultCityId, onComplete, onCancel }: Q
       <Card className="w-full max-w-2xl p-4 sm:p-8 space-y-6 sm:space-y-8">
         <div className="space-y-4">
           <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>Step {step + 1} of {totalSteps}</span>
+            <span>{t("questionnaire.stepOf", { step: step + 1, total: totalSteps })}</span>
             <Button variant="ghost" size="sm" onClick={onCancel} data-testid="button-cancel-questionnaire">
-              Cancel
+              {t("questionnaire.cancel")}
             </Button>
           </div>
           <Progress value={progress} className="h-2" data-testid="progress-questionnaire" />
@@ -187,11 +186,11 @@ export function Questionnaire({ cities, defaultCityId, onComplete, onCancel }: Q
         {step === 0 && (
           <div className="space-y-4">
             <div>
-              <h2 className="text-2xl font-semibold">Which city are you visiting?</h2>
-              <p className="text-muted-foreground mt-1">Select your destination</p>
+              <h2 className="text-2xl font-semibold">{t("questionnaire.steps.city.title")}</h2>
+              <p className="text-muted-foreground mt-1">{t("questionnaire.steps.city.subtitle")}</p>
             </div>
             <Input
-              placeholder="Search cities…"
+              placeholder={t("questionnaire.steps.city.searchPlaceholder")}
               value={citySearch}
               onChange={(e) => setCitySearch(e.target.value)}
               autoFocus
@@ -219,8 +218,8 @@ export function Questionnaire({ cities, defaultCityId, onComplete, onCancel }: Q
         {step === 1 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-semibold">What's your budget?</h2>
-              <p className="text-muted-foreground mt-1">This helps us find the right neighborhood for you</p>
+              <h2 className="text-2xl font-semibold">{t("questionnaire.steps.budget.title")}</h2>
+              <p className="text-muted-foreground mt-1">{t("questionnaire.steps.budget.subtitle")}</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {budgetOptions.map((option) => (
@@ -240,8 +239,8 @@ export function Questionnaire({ cities, defaultCityId, onComplete, onCancel }: Q
         {step === 2 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-semibold">What's your ideal vibe?</h2>
-              <p className="text-muted-foreground mt-1">Select up to 3 that match your style</p>
+              <h2 className="text-2xl font-semibold">{t("questionnaire.steps.vibe.title")}</h2>
+              <p className="text-muted-foreground mt-1">{t("questionnaire.steps.vibe.subtitle")}</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               {vibeOptions.map((option) => (
@@ -273,8 +272,8 @@ export function Questionnaire({ cities, defaultCityId, onComplete, onCancel }: Q
         {step === 3 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-semibold">How do you like to get around?</h2>
-              <p className="text-muted-foreground mt-1">Your travel style matters for neighborhood selection</p>
+              <h2 className="text-2xl font-semibold">{t("questionnaire.steps.travelStyle.title")}</h2>
+              <p className="text-muted-foreground mt-1">{t("questionnaire.steps.travelStyle.subtitle")}</p>
             </div>
             <div className="grid grid-cols-1 gap-3">
               {travelStyleOptions.map((option) => (
@@ -294,8 +293,8 @@ export function Questionnaire({ cities, defaultCityId, onComplete, onCancel }: Q
         {step === 4 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-semibold">What's the purpose of your trip?</h2>
-              <p className="text-muted-foreground mt-1">This helps us understand your needs</p>
+              <h2 className="text-2xl font-semibold">{t("questionnaire.steps.tripPurpose.title")}</h2>
+              <p className="text-muted-foreground mt-1">{t("questionnaire.steps.tripPurpose.subtitle")}</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {tripPurposeOptions.map((option) => (
@@ -319,7 +318,7 @@ export function Questionnaire({ cities, defaultCityId, onComplete, onCancel }: Q
             data-testid="button-questionnaire-back"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            {step === 0 ? "Cancel" : "Back"}
+            {step === 0 ? t("questionnaire.cancel") : t("questionnaire.back")}
           </Button>
           
           <Button 
@@ -329,12 +328,12 @@ export function Questionnaire({ cities, defaultCityId, onComplete, onCancel }: Q
           >
             {step === totalSteps - 1 ? (
               <>
-                Find My Neighborhood
+                {t("questionnaire.findMyNeighborhood")}
                 <Check className="w-4 h-4 ml-2" />
               </>
             ) : (
               <>
-                Next
+                {t("questionnaire.next")}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </>
             )}

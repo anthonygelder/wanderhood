@@ -1,0 +1,168 @@
+{
+  "header": {
+    "selectCity": "Selecciona una ciudad",
+    "exploreCities": "Explorar ciudades",
+    "favorites": "Favoritos",
+    "signIn": "Iniciar sesión",
+    "signOut": "Cerrar sesión"
+  },
+  "hero": {
+    "title": "Encuentra Tu",
+    "titleEmphasis": "Barrio Perfecto",
+    "description": "Descubre barrios con mucho ambiente, transporte público excelente y gastronomía local. Sin coche necesario.",
+    "cta": "¿Dónde Me Quedo?",
+    "exploreCities": "Explorar ciudades",
+    "stats": {
+      "cities": "ciudades",
+      "neighborhoods": "barrios transitables",
+      "hotels": "hoteles"
+    }
+  },
+  "features": {
+    "title": "Todo lo que necesitas para elegir",
+    "description": "Analizamos los barrios en múltiples dimensiones para que encuentres el lugar perfecto según tu estilo de viaje.",
+    "items": {
+      "walkability": { "title": "Índice de transitabilidad", "description": "Sabe exactamente qué tan transitable es cada barrio antes de reservar." },
+      "transit": { "title": "Conectividad de transporte", "description": "Encuentra zonas cerca de estaciones de metro y líneas de autobús." },
+      "safety": { "title": "Valoraciones de seguridad", "description": "Toma decisiones informadas con nuestros datos de seguridad por barrio." },
+      "food": { "title": "Densidad gastronómica", "description": "Descubre barrios llenos de cafeterías, restaurantes y cocina local." },
+      "local": { "title": "Ambiente local vs turístico", "description": "Elige entre un ambiente auténtico o zonas más orientadas al turismo." },
+      "ai": { "title": "Análisis con inteligencia artificial", "description": "Obtén descripciones personalizadas de barrios adaptadas a tus preferencias." }
+    }
+  },
+  "cities": {
+    "title": "Destinos populares",
+    "description": "Explora barrios transitables en estas ciudades aptas para viajeros sin coche",
+    "showAll": "Ver las {{count}} ciudades",
+    "browseAll": "Buscar todas las ciudades →"
+  },
+  "emailCapture": {
+    "title": "Recibe guías de ciudades en tu bandeja",
+    "description": "Barrios transitables seleccionados a mano, joyas ocultas y consejos para viajar sin coche. Sin spam, nunca.",
+    "placeholder": "tu@email.com",
+    "subscribe": "Suscribirme",
+    "subscribing": "Suscribiendo…",
+    "success": "¡Ya estás dentro! Pronto tendrás noticias nuestras.",
+    "noSpam": "Sin spam. Cancela cuando quieras."
+  },
+  "faq": {
+    "title": "Preguntas frecuentes",
+    "description": "Todo lo que necesitas saber sobre Wanderhood",
+    "items": [
+      {
+        "question": "¿Cómo calculáis las puntuaciones de transitabilidad?",
+        "answer": "Nuestras puntuaciones se basan en múltiples factores: infraestructura peatonal, proximidad a servicios cotidianos, conectividad de calles y terreno. Combinamos datos de diversas fuentes y los validamos con conocimiento local para ofrecer puntuaciones precisas."
+      },
+      {
+        "question": "¿Qué significa 'conectividad de transporte'?",
+        "answer": "La conectividad de transporte mide qué tan bien está atendido un barrio por el transporte público: proximidad a estaciones de metro o autobús, frecuencia del servicio y conexiones con otras partes de la ciudad."
+      },
+      {
+        "question": "¿Cómo determinéis las valoraciones de seguridad?",
+        "answer": "Las valoraciones de seguridad se obtienen de estadísticas oficiales de criminalidad, datos de organismos públicos y reseñas de viajeros, con foco en métricas relevantes para turistas, como delitos callejeros y la reputación general del barrio."
+      },
+      {
+        "question": "¿De verdad no necesito coche en estos barrios?",
+        "answer": "¡Sí! Todos los barrios que recomendamos están elegidos precisamente porque permiten moverte cómodamente sin coche. Ya sea a pie o en transporte público, podrás llegar a los principales atractivos y a los servicios del día a día sin problema."
+      },
+      {
+        "question": "¿Cómo funcionan los enlaces de afiliados de hoteles?",
+        "answer": "Cuando haces clic en un enlace de hotel y realizas una reserva, podemos recibir una pequeña comisión sin coste adicional para ti. Esto nos ayuda a mantener Wanderhood gratuito y a seguir ofreciendo recomendaciones de barrios."
+      },
+      {
+        "question": "¿Puedo fiarme de las descripciones generadas por inteligencia artificial?",
+        "answer": "Nuestras descripciones de IA se basan en datos reales de cada barrio y están diseñadas para darte una visión auténtica del lugar. Están elaboradas para destacar lo que hace único a cada barrio para los viajeros sin coche."
+      }
+    ]
+  },
+  "footer": {
+    "tagline": "Encuentra el barrio sin coche perfecto para tu próxima aventura. Ayudamos a los viajeros a descubrir zonas transitables con buen transporte, gastronomía increíble y ambiente local auténtico.",
+    "popularCities": "Ciudades populares",
+    "resources": "Recursos",
+    "company": "Empresa",
+    "copyright": "© {{year}} Wanderhood. Todos los derechos reservados.",
+    "affiliateDisclosure": "Divulgación de afiliados: podemos ganar comisiones por reservas de hotel realizadas a través de nuestros enlaces.",
+    "links": {
+      "howItWorks": "Cómo funciona",
+      "carFreeGuide": "Guía de viaje sin coche",
+      "blog": "Blog",
+      "faq": "FAQ",
+      "about": "Sobre nosotros",
+      "contact": "Contacto",
+      "privacy": "Política de privacidad",
+      "terms": "Términos de uso"
+    }
+  },
+  "questionnaire": {
+    "stepOf": "Paso {{step}} de {{total}}",
+    "cancel": "Cancelar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "findMyNeighborhood": "Encontrar mi barrio",
+    "steps": {
+      "city": {
+        "title": "¿Qué ciudad vas a visitar?",
+        "subtitle": "Selecciona tu destino",
+        "searchPlaceholder": "Buscar ciudades…"
+      },
+      "budget": {
+        "title": "¿Cuál es tu presupuesto?",
+        "subtitle": "Esto nos ayuda a encontrar el barrio adecuado para ti"
+      },
+      "vibe": {
+        "title": "¿Qué ambiente prefieres?",
+        "subtitle": "Elige hasta 3 que encajen con tu estilo"
+      },
+      "travelStyle": {
+        "title": "¿Cómo te gusta moverte?",
+        "subtitle": "Tu forma de viajar influye en la selección del barrio"
+      },
+      "tripPurpose": {
+        "title": "¿Cuál es el motivo de tu viaje?",
+        "subtitle": "Esto nos ayuda a entender lo que necesitas"
+      }
+    },
+    "budget": {
+      "budget": { "label": "Económico", "description": "Hostales y hoteles baratos" },
+      "moderate": { "label": "Moderado", "description": "Comodidad de gama media" },
+      "upscale": { "label": "Superior", "description": "Alojamiento de gama alta" },
+      "luxury": { "label": "Lujo", "description": "Experiencias premium" }
+    },
+    "vibe": {
+      "quiet": "Tranquilo y relajado",
+      "artsy": "Artístico y creativo",
+      "hip": "Moderno y de moda",
+      "historic": "Histórico y cultural",
+      "foodie": "Paraíso gastronómico",
+      "party": "Vida nocturna",
+      "waterfront": "Junto al agua",
+      "family": "Apto para familias"
+    },
+    "travelStyle": {
+      "walk": { "label": "A pie siempre", "description": "Me encanta explorar caminando" },
+      "transit": { "label": "Transporte público", "description": "Metro y autobús son lo mío" },
+      "mixed": { "label": "Combinado", "description": "A pie si es cerca, transporte para lo lejos" }
+    },
+    "tripPurpose": {
+      "solo": { "label": "Aventura en solitario", "description": "Explorando por mi cuenta" },
+      "couples": { "label": "Escapada en pareja", "description": "Un fin de semana romántico" },
+      "remote_work": { "label": "Trabajo remoto", "description": "Trabajando mientras viajo" },
+      "foodie_trip": { "label": "Viaje gastronómico", "description": "Comiendo por donde paso" },
+      "family": { "label": "Viaje en familia", "description": "Con niños" },
+      "friends": { "label": "Viaje con amigos", "description": "Aventura en grupo" }
+    }
+  },
+  "recommendations": {
+    "title": "Tus mejores opciones",
+    "description": "Basándonos en tus preferencias, estos son los mejores barrios para ti",
+    "startOver": "Volver a empezar",
+    "share": "Compartir",
+    "copied": "¡Copiado!",
+    "noMatches": {
+      "title": "Sin resultados",
+      "description": "No encontramos barrios que coincidan con tus criterios. Intenta ajustar tus preferencias."
+    },
+    "hotelsIn": "Hoteles en {{name}}",
+    "exploreFullGuide": "Ver la guía completa de {{city}} →"
+  }
+}

@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Check } from "lucide-react";
 
 export function EmailCapture() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -37,22 +39,22 @@ export function EmailCapture() {
           <Mail className="w-10 h-10 opacity-80" />
         </div>
         <h2 className="text-3xl md:text-4xl font-semibold mb-3">
-          Get city guides in your inbox
+          {t("emailCapture.title")}
         </h2>
         <p className="text-primary-foreground/75 mb-8 text-lg">
-          Hand-picked walkable neighborhoods, hidden gems, and car-free travel tips. No spam, ever.
+          {t("emailCapture.description")}
         </p>
 
         {status === "success" ? (
           <div className="flex items-center justify-center gap-2 text-lg font-medium">
             <Check className="w-5 h-5" />
-            You're in! We'll be in touch soon.
+            {t("emailCapture.success")}
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
             <Input
               type="email"
-              placeholder="your@email.com"
+              placeholder={t("emailCapture.placeholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -64,7 +66,7 @@ export function EmailCapture() {
               variant="secondary"
               className="shrink-0"
             >
-              {status === "loading" ? "Subscribing…" : "Subscribe"}
+              {status === "loading" ? t("emailCapture.subscribing") : t("emailCapture.subscribe")}
             </Button>
           </form>
         )}
@@ -74,7 +76,7 @@ export function EmailCapture() {
         )}
 
         <p className="text-xs text-primary-foreground/50 mt-4">
-          No spam. Unsubscribe anytime.
+          {t("emailCapture.noSpam")}
         </p>
       </div>
     </section>

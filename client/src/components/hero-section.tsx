@@ -1,12 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Train, Coffee } from "lucide-react";
 import logoIcon from "@/assets/wanderhood-icon.svg";
+import { useTranslation } from "react-i18next";
 
 interface HeroSectionProps {
   onStartQuestionnaire: () => void;
 }
 
 export function HeroSection({ onStartQuestionnaire }: HeroSectionProps) {
+  const { t } = useTranslation();
   return (
     <section 
       className="relative min-h-[80vh] flex items-center justify-center overflow-hidden"
@@ -27,14 +29,13 @@ export function HeroSection({ onStartQuestionnaire }: HeroSectionProps) {
           </div>
 
           <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold text-white leading-tight">
-            Find Your Perfect
+            {t("hero.title")}
             <br />
-            <span className="font-serif italic">Neighborhood</span>
+            <span className="font-serif italic">{t("hero.titleEmphasis")}</span>
           </h1>
           
           <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
-            Discover walkable neighborhoods with amazing transit, local food scenes, 
-            and authentic vibes. No car required.
+            {t("hero.description")}
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
@@ -44,7 +45,7 @@ export function HeroSection({ onStartQuestionnaire }: HeroSectionProps) {
               className="bg-white text-black hover:bg-white/90 font-semibold px-8 py-6 text-lg"
               data-testid="button-start-questionnaire"
             >
-              Where Should I Stay?
+              {t("hero.cta")}
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
             
@@ -55,7 +56,7 @@ export function HeroSection({ onStartQuestionnaire }: HeroSectionProps) {
                 className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 px-8 py-6 text-lg"
                 data-testid="button-explore-cities"
               >
-                Explore Cities
+                {t("hero.exploreCities")}
               </Button>
             </a>
           </div>
@@ -63,17 +64,17 @@ export function HeroSection({ onStartQuestionnaire }: HeroSectionProps) {
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-white/60 text-sm">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4" />
-              <span><strong className="text-white/90">65</strong> cities</span>
+              <span><strong className="text-white/90">65</strong> {t("hero.stats.cities")}</span>
             </div>
             <div className="hidden sm:block text-white/30">·</div>
             <div className="flex items-center gap-2">
               <Train className="w-4 h-4" />
-              <span><strong className="text-white/90">200+</strong> walkable neighborhoods</span>
+              <span><strong className="text-white/90">200+</strong> {t("hero.stats.neighborhoods")}</span>
             </div>
             <div className="hidden sm:block text-white/30">·</div>
             <div className="flex items-center gap-2">
               <Coffee className="w-4 h-4" />
-              <span><strong className="text-white/90">700+</strong> hotels</span>
+              <span><strong className="text-white/90">700+</strong> {t("hero.stats.hotels")}</span>
             </div>
           </div>
         </div>

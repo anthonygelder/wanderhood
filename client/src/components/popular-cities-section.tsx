@@ -4,6 +4,7 @@ import { CityCard } from "@/components/city-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import type { City } from "@shared/schema";
+import { useTranslation } from "react-i18next";
 
 const PAGE_SIZE = 6;
 
@@ -13,6 +14,7 @@ interface PopularCitiesSectionProps {
 }
 
 export function PopularCitiesSection({ cities, isLoading }: PopularCitiesSectionProps) {
+  const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
   const visible = showAll ? cities : cities.slice(0, PAGE_SIZE);
 
@@ -45,10 +47,10 @@ export function PopularCitiesSection({ cities, isLoading }: PopularCitiesSection
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-semibold">
-            Popular Destinations
+            {t("cities.title")}
           </h2>
           <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-            Explore walkable neighborhoods in these car-free friendly cities
+            {t("cities.description")}
           </p>
         </div>
 
@@ -61,11 +63,11 @@ export function PopularCitiesSection({ cities, isLoading }: PopularCitiesSection
         {!showAll && cities.length > PAGE_SIZE && (
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-10">
             <Button variant="outline" onClick={() => setShowAll(true)}>
-              Show all {cities.length} cities
+              {t("cities.showAll", { count: cities.length })}
             </Button>
             <Link href="/cities">
               <a className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4">
-                Browse & search all cities →
+                {t("cities.browseAll")}
               </a>
             </Link>
           </div>
@@ -74,7 +76,7 @@ export function PopularCitiesSection({ cities, isLoading }: PopularCitiesSection
           <div className="flex justify-center mt-10">
             <Link href="/cities">
               <a className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4">
-                Browse & search all cities →
+                {t("cities.browseAll")}
               </a>
             </Link>
           </div>

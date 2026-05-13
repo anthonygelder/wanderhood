@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 import { Mail, Twitter, Instagram } from "lucide-react";
 import logoIcon from "@/assets/wanderhood-icon.svg";
 
@@ -10,21 +11,23 @@ const cityLinks = [
   { name: "Amsterdam", slug: "amsterdam" },
 ];
 
-const resourceLinks = [
-  { name: "How It Works", href: "/how-it-works" },
-  { name: "Car-Free Travel Guide", href: "/guide" },
-  { name: "Blog", href: "/blog" },
-  { name: "FAQ", href: "/faq" },
-];
-
-const companyLinks = [
-  { name: "About Us", href: "/about" },
-  { name: "Contact", href: "/contact" },
-  { name: "Privacy Policy", href: "/privacy" },
-  { name: "Terms of Service", href: "/terms" },
-];
-
 export function Footer() {
+  const { t } = useTranslation();
+
+  const resourceLinks = [
+    { name: t("footer.links.howItWorks"), href: "/how-it-works" },
+    { name: t("footer.links.carFreeGuide"), href: "/guide" },
+    { name: t("footer.links.blog"), href: "/blog" },
+    { name: t("footer.links.faq"), href: "/faq" },
+  ];
+
+  const companyLinks = [
+    { name: t("footer.links.about"), href: "/about" },
+    { name: t("footer.links.contact"), href: "/contact" },
+    { name: t("footer.links.privacy"), href: "/privacy" },
+    { name: t("footer.links.terms"), href: "/terms" },
+  ];
+
   return (
     <footer className="bg-muted/30 border-t border-border" data-testid="footer">
       <div className="max-w-7xl mx-auto px-6 py-16">
@@ -35,9 +38,7 @@ export function Footer() {
               <span className="font-semibold text-lg">Wanderhood</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Find the perfect car-free neighborhood for your next adventure. 
-              We help travelers discover walkable areas with great transit, 
-              amazing food, and authentic local vibes.
+              {t("footer.tagline")}
             </p>
             <div className="flex items-center gap-3">
               <a 
@@ -69,7 +70,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide">Popular Cities</h4>
+            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide">{t("footer.popularCities")}</h4>
             <ul className="space-y-2">
               {cityLinks.map((city) => (
                 <li key={city.slug}>
@@ -84,7 +85,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide">Resources</h4>
+            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide">{t("footer.resources")}</h4>
             <ul className="space-y-2">
               {resourceLinks.map((link) => (
                 <li key={link.href}>
@@ -99,7 +100,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide">Company</h4>
+            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide">{t("footer.company")}</h4>
             <ul className="space-y-2">
               {companyLinks.map((link) => (
                 <li key={link.href}>
@@ -117,10 +118,10 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-xs text-muted-foreground">
-              © {new Date().getFullYear()} Wanderhood. All rights reserved.
+              {t("footer.copyright", { year: new Date().getFullYear() })}
             </p>
             <p className="text-xs text-muted-foreground text-center md:text-right">
-              Affiliate Disclosure: We may earn commissions from hotel bookings made through our links.
+              {t("footer.affiliateDisclosure")}
             </p>
           </div>
         </div>
