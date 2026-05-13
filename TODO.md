@@ -3,8 +3,8 @@
 ## Monetization: Quick Wins
 
 - [x] Persist newsletter emails to PostgreSQL — newsletter_subscribers table, survives restarts
-- [ ] Integrate email service (Resend) for actual newsletter delivery and drip campaigns
-- [ ] Sign up for GetYourGuide affiliate program — GYG links already exist in the codebase but are not tracked (non-affiliate)
+- [x] Integrate email service (Resend) for actual newsletter delivery and drip campaigns
+- [x] Sign up for GetYourGuide affiliate program — GYG links already exist in the codebase but are not tracked (non-affiliate)
 - [x] Add travel insurance affiliate links (World Nomads or Cover Genius) — framework in place, swap PLACEHOLDER once approved
 - [x] Add Airbnb / Vrbo deeplinks per neighborhood alongside hotel listings — framework in place, swap PLACEHOLDER once approved
 - [x] Add eSIM affiliate (Airalo via Travelpayouts) — framework in place, swap PLACEHOLDER once approved

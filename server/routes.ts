@@ -8,6 +8,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./auth";
 import type { User, TripPurposeOption } from "@shared/schema";
 import { affiliateClicks, newsletterSubscribers } from "@shared/schema";
+import { sendWelcomeEmail } from "./email";
 
 const anthropic = process.env.ANTHROPIC_API_KEY
   ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -92,10 +93,16 @@ export async function registerRoutes(
     try {
       const { db } = await import("./db");
       if (db) {
-        await db
+        const result = await db
           .insert(newsletterSubscribers)
           .values({ email: normalised })
-          .onConflictDoNothing();
+          .onConflictDoNothing()
+          .returning({ id: newsletterSubscribers.id });
+        if (result.length > 0) {
+          sendWelcomeEmail(normalised).catch((e) =>
+            console.error("[email] welcome failed:", e)
+          );
+        }
       }
       console.log(`[subscribe] ${normalised}`);
       res.json({ message: "Subscribed successfully" });

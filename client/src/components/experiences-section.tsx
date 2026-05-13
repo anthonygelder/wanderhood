@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExternalLink, Star, Clock, Compass } from "lucide-react";
+import { trackClick } from "@/lib/tracking";
 import type { Neighborhood, Experience } from "@shared/schema";
 
 const CATEGORY_LABELS: Record<string, { label: string; emoji: string }> = {
@@ -170,7 +171,10 @@ export function ExperiencesSection({
                       <div className="flex gap-2">
                         <Button
                           size="sm"
-                          onClick={() => window.open(exp.affiliateUrl, "_blank")}
+                          onClick={() => {
+                            trackClick({ type: "viator", url: exp.affiliateUrl, neighborhoodId: exp.neighborhoodId, cityId: citySlug });
+                            window.open(exp.affiliateUrl, "_blank");
+                          }}
                           data-testid={`button-book-experience-${exp.id}`}
                         >
                           Viator
@@ -179,7 +183,12 @@ export function ExperiencesSection({
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => window.open(`https://www.getyourguide.com/s/?q=${encodeURIComponent(exp.name)}`, "_blank")}
+                          onClick={() => {
+                            const partnerId = import.meta.env.VITE_GYG_PARTNER_ID;
+                            const url = `https://www.getyourguide.com/s/?q=${encodeURIComponent(exp.name)}${partnerId ? `&partner_id=${partnerId}` : ""}`;
+                            trackClick({ type: "gyg", url, neighborhoodId: exp.neighborhoodId, cityId: citySlug });
+                            window.open(url, "_blank");
+                          }}
                           data-testid={`button-gyg-experience-${exp.id}`}
                         >
                           GYG
