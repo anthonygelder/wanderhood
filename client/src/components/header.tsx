@@ -95,15 +95,6 @@ export function Header({ cities, selectedCity, onCityChange, transparent = false
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleLang}
-            className="text-xs font-semibold px-2"
-            data-testid="button-lang-toggle"
-          >
-            {currentLang.startsWith("es") ? "EN" : "ES"}
-          </Button>
           <ThemeToggle />
           
           <Button
@@ -138,9 +129,7 @@ export function Header({ cities, selectedCity, onCityChange, transparent = false
           <Link href="/cities" data-testid="link-cities-mobile">
             <span className="block text-sm font-medium py-2">{t("header.exploreCities")}</span>
           </Link>
-          <Button variant="outline" size="sm" onClick={toggleLang} className="text-xs font-semibold">
-            {currentLang.startsWith("es") ? "English" : "Español"}
-          </Button>
+
         </div>
       )}
     </header>
