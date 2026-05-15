@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { rateLimit } from "express-rate-limit";
+import { rateLimit, ipKeyGenerator } from "express-rate-limit";
 import { storage } from "./storage";
 import { questionnaireInputSchema } from "@shared/schema";
 import Anthropic from "@anthropic-ai/sdk";
@@ -184,7 +184,7 @@ export async function registerRoutes(
     legacyHeaders: false,
     keyGenerator: (req: any) => {
       // Use authenticated user ID when available so logged-in users aren't penalised on shared IPs
-      return req.user?.id || req.ip || "unknown";
+      return req.user?.id || ipKeyGenerator(req) || "unknown";
     },
   });
 
@@ -194,7 +194,7 @@ export async function registerRoutes(
     message: { error: "Free AI limit reached. Sign in to continue.", code: "AI_LIMIT_REACHED" },
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req: any) => req.ip || "unknown",
+    keyGenerator: (req: any) => ipKeyGenerator(req) || "unknown",
     skip: (req: any) => !!req.user,
   });
 
