@@ -1,6 +1,5 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { Strategy as GitHubStrategy } from "passport-github2";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import connectPg from "connect-pg-simple";
@@ -72,34 +71,6 @@ export async function setupAuth(app: Express) {
     );
   }
 
-  if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-    passport.use(
-      new GitHubStrategy(
-        {
-          clientID: process.env.GITHUB_CLIENT_ID,
-          clientSecret: process.env.GITHUB_CLIENT_SECRET,
-          callbackURL: `${process.env.BASE_URL || "http://localhost:5000"}/api/auth/github/callback`,
-          scope: ["user:email"],
-        },
-        async (_accessToken: string, _refreshToken: string, profile: any, done: any) => {
-          try {
-            const displayName: string = profile.displayName || profile.username || "";
-            const [firstName, ...rest] = displayName.split(" ");
-            const user = await authStorage.upsertUser({
-              id: `github_${profile.id}`,
-              email: profile.emails?.[0]?.value ?? null,
-              firstName: firstName || null,
-              lastName: rest.join(" ") || null,
-              profileImageUrl: profile.photos?.[0]?.value ?? null,
-            });
-            done(null, user);
-          } catch (err) {
-            done(err as Error);
-          }
-        }
-      )
-    );
-  }
 }
 
 export function registerAuthRoutes(app: Express): void {
@@ -111,13 +82,6 @@ export function registerAuthRoutes(app: Express): void {
     (_req, res) => res.redirect("/")
   );
 
-  // GitHub OAuth
-  app.get("/api/auth/github", passport.authenticate("github", { scope: ["user:email"] }));
-  app.get(
-    "/api/auth/github/callback",
-    passport.authenticate("github", { failureRedirect: "/?auth=failed" }),
-    (_req, res) => res.redirect("/")
-  );
 
   app.get("/api/logout", (req, res) => {
     req.logout(() => res.redirect("/"));
