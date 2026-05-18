@@ -108,7 +108,7 @@ export default function Home() {
         <meta name="twitter:title" content="Wanderhood - Car-Free Travel Made Easy" />
         <meta name="twitter:description" content="Find walkable neighborhoods with great transit, food, and local character." />
         <meta name="twitter:image" content="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1200&q=80" />
-        <meta name='impact-site-verification' value='4f0b119d-3ec6-4370-bc69-22455834b144' />
+        <meta name='impact-site-verification' content='4f0b119d-3ec6-4370-bc69-22455834b144' />
       </Helmet>
       <Header cities={cities} />
       <HeroSection onStartQuestionnaire={handleStartQuestionnaire} />
