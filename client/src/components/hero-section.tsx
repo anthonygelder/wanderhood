@@ -24,9 +24,10 @@ const INTERVAL_MS = 5000;
 interface HeroSectionProps {
   onStartQuestionnaire: () => void;
   cities?: City[];
+  stats?: { cities: number; neighborhoods: number; hotels: number };
 }
 
-export function HeroSection({ onStartQuestionnaire, cities }: HeroSectionProps) {
+export function HeroSection({ onStartQuestionnaire, cities, stats }: HeroSectionProps) {
   const { t } = useTranslation();
   const [current, setCurrent] = useState(0);
   const [next, setNext] = useState(1);
@@ -122,17 +123,17 @@ export function HeroSection({ onStartQuestionnaire, cities }: HeroSectionProps) 
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-white/60 text-sm">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4" />
-              <span><strong className="text-white/90">65</strong> {t("hero.stats.cities")}</span>
+              <span><strong className="text-white/90">{stats?.cities ?? cities?.length ?? 65}</strong> {t("hero.stats.cities")}</span>
             </div>
             <div className="hidden sm:block text-white/30">·</div>
             <div className="flex items-center gap-2">
               <Train className="w-4 h-4" />
-              <span><strong className="text-white/90">200+</strong> {t("hero.stats.neighborhoods")}</span>
+              <span><strong className="text-white/90">{stats ? `${stats.neighborhoods}+` : "200+"}</strong> {t("hero.stats.neighborhoods")}</span>
             </div>
             <div className="hidden sm:block text-white/30">·</div>
             <div className="flex items-center gap-2">
               <Coffee className="w-4 h-4" />
-              <span><strong className="text-white/90">700+</strong> {t("hero.stats.hotels")}</span>
+              <span><strong className="text-white/90">{stats ? `${stats.hotels}+` : "700+"}</strong> {t("hero.stats.hotels")}</span>
             </div>
           </div>
         </div>

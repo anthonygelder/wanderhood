@@ -24,7 +24,11 @@ export default function Home() {
     queryKey: ["/api/cities"],
   });
 
-  const { mutate, isPending, recommendations, hotels, explanations, isExplaining, explainLimitReached, reset } = useRecommendations(
+  const { data: stats } = useQuery<{ cities: number; neighborhoods: number; hotels: number }>({
+    queryKey: ["/api/stats"],
+  });
+
+  const { mutate, isPending, recommendations, hotels, lastInput, explanations, isExplaining, explainLimitReached, reset } = useRecommendations(
     () => setViewState("results")
   );
 
@@ -59,6 +63,8 @@ export default function Home() {
           hotels={hotels}
           isLoading={isPending}
           onStartOver={handleStartOver}
+          shareInput={lastInput}
+          cities={cities}
           explanations={explanations}
           isExplaining={isExplaining}
           explainLimitReached={explainLimitReached}
@@ -98,10 +104,10 @@ export default function Home() {
       <Helmet>
         <title>Wanderhood - Find Your Perfect Car-Free Neighborhood</title>
         <meta name="description" content="Discover the best walkable neighborhoods for your next trip. Wanderhood helps travelers find car-free areas with great transit, food, and local vibes." />
-        <link rel="canonical" href="https://wanderhood.com/" />
+        <link rel="canonical" href="https://wanderhood.app/" />
         <meta property="og:title" content="Wanderhood - Car-Free Travel Made Easy" />
         <meta property="og:description" content="Find walkable neighborhoods with great transit, food, and local character." />
-        <meta property="og:url" content="https://wanderhood.com/" />
+        <meta property="og:url" content="https://wanderhood.app/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1200&q=80" />
         <meta name="twitter:card" content="summary_large_image" />
@@ -111,7 +117,7 @@ export default function Home() {
         <meta name='impact-site-verification' content='4f0b119d-3ec6-4370-bc69-22455834b144' />
       </Helmet>
       <Header cities={cities} />
-      <HeroSection onStartQuestionnaire={handleStartQuestionnaire} />
+      <HeroSection onStartQuestionnaire={handleStartQuestionnaire} cities={cities} stats={stats} />
       <FeaturesSection />
       <PopularCitiesSection cities={cities} isLoading={citiesLoading} />
       <EmailCapture />

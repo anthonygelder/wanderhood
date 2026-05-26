@@ -40,6 +40,7 @@ function buildHotelBookingUrl(hotelName: string, city: City): string {
 
 export interface IStorage {
   init(): Promise<void>;
+  getStats(): Promise<{ cities: number; neighborhoods: number; hotels: number }>;
   getCities(): Promise<City[]>;
   getCityBySlug(slug: string): Promise<City | undefined>;
   getCityById(id: string): Promise<City | undefined>;
@@ -69,6 +70,14 @@ export class MemStorage implements IStorage {
   private neighborhoods: Neighborhood[] = [...neighborhoods];
   private hotels: Hotel[] = hotels;
   private experiences: Experience[] = experiences;
+
+  async getStats(): Promise<{ cities: number; neighborhoods: number; hotels: number }> {
+    return {
+      cities: this.cities.length,
+      neighborhoods: this.neighborhoods.length,
+      hotels: this.hotels.length,
+    };
+  }
 
   async init(): Promise<void> {
     if (!db) return;

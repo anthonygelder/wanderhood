@@ -170,10 +170,10 @@ export default function CityPage() {
       <Helmet>
         <title>{city.name} Car-Free Travel Guide - Wanderhood</title>
         <meta name="description" content={`Explore walkable neighborhoods in ${city.name}, ${city.country}. ${city.description}`} />
-        <link rel="canonical" href={`https://wanderhood.com/city/${city.slug}`} />
+        <link rel="canonical" href={`https://wanderhood.app/city/${city.slug}`} />
         <meta property="og:title" content={`${city.name} Car-Free Travel Guide - Wanderhood`} />
         <meta property="og:description" content={`Explore walkable neighborhoods in ${city.name}. ${city.description}`} />
-        <meta property="og:url" content={`https://wanderhood.com/city/${city.slug}`} />
+        <meta property="og:url" content={`https://wanderhood.app/city/${city.slug}`} />
         <meta property="og:type" content="article" />
         <meta property="og:image" content={city.heroImage} />
         <meta name="twitter:card" content="summary_large_image" />
@@ -186,7 +186,7 @@ export default function CityPage() {
             "@type": "TouristDestination",
             "name": `${city.name} - Car-Free Travel Guide`,
             "description": city.description,
-            "url": `https://wanderhood.com/city/${city.slug}`,
+            "url": `https://wanderhood.app/city/${city.slug}`,
             "image": city.heroImage,
             "geo": {
               "@type": "GeoCoordinates",

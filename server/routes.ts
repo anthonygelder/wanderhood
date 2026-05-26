@@ -14,7 +14,7 @@ const anthropic = process.env.ANTHROPIC_API_KEY
   ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   : null;
 
-const BASE_URL = process.env.BASE_URL || "https://wanderhood.com";
+const BASE_URL = process.env.BASE_URL || "https://wanderhood.app";
 
 
 export async function registerRoutes(
@@ -80,6 +80,17 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error generating sitemap:", error);
       res.status(500).send("Error generating sitemap");
+    }
+  });
+
+  // Stats — city/neighborhood/hotel counts for hero section
+  app.get("/api/stats", async (_req, res) => {
+    try {
+      const stats = await storage.getStats();
+      res.set("Cache-Control", "public, max-age=86400");
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch stats" });
     }
   });
 
@@ -188,14 +199,26 @@ export async function registerRoutes(
     },
   });
 
-  const aiExplainLimiter = rateLimit({
-    windowMs: 24 * 60 * 60 * 1000, // 24 hours
+  // Anonymous users: 1 AI explain per day (IP-keyed)
+  const aiExplainLimiterAnon = rateLimit({
+    windowMs: 24 * 60 * 60 * 1000,
     limit: 1,
     message: { error: "Free AI limit reached. Sign in to continue.", code: "AI_LIMIT_REACHED" },
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: (req: any) => ipKeyGenerator(req) || "unknown",
     skip: (req: any) => !!req.user,
+  });
+
+  // Authenticated users: 20 AI explains per day (user-keyed)
+  const aiExplainLimiterAuth = rateLimit({
+    windowMs: 24 * 60 * 60 * 1000,
+    limit: 20,
+    message: { error: "Daily AI limit reached.", code: "AI_LIMIT_REACHED" },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req: any) => req.user?.id || "unknown",
+    skip: (req: any) => !req.user,
   });
 
   // Get experiences for a city
@@ -225,26 +248,28 @@ export async function registerRoutes(
       const input = parseResult.data;
       const recommendations = await storage.getRecommendations(input);
 
-      // Generate AI descriptions for recommendations
-      for (const rec of recommendations) {
-        if (!rec.neighborhood.aiDescription) {
-          try {
-            const city = await storage.getCityById(rec.neighborhood.cityId);
-            const aiDescription = await generateNeighborhoodDescription(
-              rec.neighborhood.name,
-              city?.name || "",
-              rec.neighborhood.vibe,
-              rec.neighborhood.scores,
-              input
-            );
-            rec.neighborhood.aiDescription = aiDescription;
-            await storage.updateNeighborhoodDescription(rec.neighborhood.id, aiDescription);
-          } catch (aiError) {
-            console.error("Error generating AI description:", aiError);
-            rec.neighborhood.aiDescription = rec.neighborhood.description;
-          }
-        }
-      }
+      // Generate AI descriptions in parallel for all neighborhoods missing one
+      await Promise.all(
+        recommendations
+          .filter((rec) => !rec.neighborhood.aiDescription)
+          .map(async (rec) => {
+            try {
+              const city = await storage.getCityById(rec.neighborhood.cityId);
+              const aiDescription = await generateNeighborhoodDescription(
+                rec.neighborhood.name,
+                city?.name || "",
+                rec.neighborhood.vibe,
+                rec.neighborhood.scores,
+                input
+              );
+              rec.neighborhood.aiDescription = aiDescription;
+              await storage.updateNeighborhoodDescription(rec.neighborhood.id, aiDescription);
+            } catch (aiError) {
+              console.error("Error generating AI description:", aiError);
+              rec.neighborhood.aiDescription = rec.neighborhood.description;
+            }
+          })
+      );
 
       res.json(recommendations);
     } catch (error) {
@@ -412,7 +437,7 @@ export async function registerRoutes(
   });
 
   // AI personalized match explanations
-  app.post("/api/ai/explain", aiExplainLimiter, async (req, res) => {
+  app.post("/api/ai/explain", aiExplainLimiterAnon, aiExplainLimiterAuth, async (req, res) => {
     try {
       const { recommendations, input } = req.body;
       if (!recommendations?.length || !input) {
@@ -445,6 +470,13 @@ Respond with JSON only, using neighborhood IDs as keys: {"<id>": "<one sentence>
       const response = await anthropic.messages.create({
         model: "claude-haiku-4-5-20251001",
         max_tokens: 300,
+        system: [
+          {
+            type: "text",
+            text: `You write personalized neighborhood match explanations. For each neighborhood, write exactly ONE sentence (max 25 words) explaining why it matches the traveler's specific preferences. Be personal and direct — reference their actual preferences. Respond with JSON only: {"<id>": "<one sentence>", ...}`,
+            cache_control: { type: "ephemeral" },
+          },
+        ] as any,
         messages: [{ role: "user", content: prompt }],
       });
 
@@ -506,6 +538,13 @@ Focus on what makes this neighborhood great for car-free exploration. Be specifi
   const response = await anthropic.messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 200,
+    system: [
+      {
+        type: "text",
+        text: "You write brief, engaging neighborhood descriptions for car-free travelers. Focus on walking/transit options and local character. Keep it 2-3 sentences, conversational and specific.",
+        cache_control: { type: "ephemeral" },
+      },
+    ] as any,
     messages: [{ role: "user", content: prompt }],
   });
 

@@ -99,11 +99,11 @@ export default function NeighborhoodPage() {
           name="description"
           content={`${neighborhood.name} is a ${neighborhood.vibe.join(", ")} neighborhood in ${city.name}. Walkability ${scores.walkability}/100 · Transit ${scores.transitConnectivity}/100. Find hotels and things to do.`}
         />
-        <link rel="canonical" href={`https://wanderhood.com/city/${city.slug}/${neighborhood.slug}`} />
+        <link rel="canonical" href={`https://wanderhood.app/city/${city.slug}/${neighborhood.slug}`} />
         <meta property="og:title" content={`${neighborhood.name}, ${city.name} — Where to Stay | Wanderhood`} />
         <meta property="og:description" content={neighborhood.description} />
         <meta property="og:image" content={neighborhood.heroImage} />
-        <meta property="og:url" content={`https://wanderhood.com/city/${city.slug}/${neighborhood.slug}`} />
+        <meta property="og:url" content={`https://wanderhood.app/city/${city.slug}/${neighborhood.slug}`} />
         <meta property="og:type" content="article" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${neighborhood.name}, ${city.name} — Where to Stay | Wanderhood`} />
@@ -115,7 +115,7 @@ export default function NeighborhoodPage() {
             "@type": "TouristAttraction",
             "name": `${neighborhood.name} — ${city.name}`,
             "description": neighborhood.aiDescription || neighborhood.description,
-            "url": `https://wanderhood.com/city/${city.slug}/${neighborhood.slug}`,
+            "url": `https://wanderhood.app/city/${city.slug}/${neighborhood.slug}`,
             "image": [neighborhood.heroImage, ...(neighborhood.photos ?? [])],
             "geo": {
               "@type": "GeoCoordinates",
@@ -125,7 +125,7 @@ export default function NeighborhoodPage() {
             "containedInPlace": {
               "@type": "City",
               "name": city.name,
-              "url": `https://wanderhood.com/city/${city.slug}`,
+              "url": `https://wanderhood.app/city/${city.slug}`,
             },
             "touristType": neighborhood.vibe,
             "amenityFeature": [
