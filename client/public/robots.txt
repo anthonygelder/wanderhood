@@ -3,4 +3,4 @@ Allow: /
 Disallow: /api/
 Disallow: /favorites
 
-Sitemap: https://wanderhood.com/sitemap.xml
+Sitemap: https://wanderhood.app/sitemap.xml

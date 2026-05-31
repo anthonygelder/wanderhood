@@ -26,10 +26,10 @@ export default function CitiesPage() {
       <Helmet>
         <title>Explore Car-Free Cities - Wanderhood</title>
         <meta name="description" content="Browse walkable cities around the world. Find neighborhoods with great transit, food, and local character in Tokyo, Lisbon, Barcelona, and more." />
-        <link rel="canonical" href="https://wanderhood.com/cities" />
+        <link rel="canonical" href="https://wanderhood.app/cities" />
         <meta property="og:title" content="Explore Car-Free Cities - Wanderhood" />
         <meta property="og:description" content="Browse walkable cities around the world with great transit, food, and local character." />
-        <meta property="og:url" content="https://wanderhood.com/cities" />
+        <meta property="og:url" content="https://wanderhood.app/cities" />
         <meta property="og:type" content="website" />
       </Helmet>
       <Header cities={cities} />

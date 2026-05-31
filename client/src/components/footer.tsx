@@ -60,7 +60,7 @@ export function Footer() {
                 <Instagram className="w-5 h-5" />
               </a>
               <a 
-                href="mailto:hello@wanderhood.com"
+                href="mailto:hello@wanderhood.app"
                 className="text-muted-foreground hover-elevate p-2 rounded-md"
                 data-testid="link-email"
               >

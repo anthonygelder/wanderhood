@@ -2,7 +2,7 @@ import { cities } from "../server/data/cities";
 import * as fs from "fs";
 import * as path from "path";
 
-const BASE_URL = "https://wanderhood.com";
+const BASE_URL = "https://wanderhood.app";
 
 function generateSitemap() {
   const staticPages = [

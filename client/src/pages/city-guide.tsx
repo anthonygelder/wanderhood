@@ -103,7 +103,7 @@ export default function CityGuidePage() {
       <Helmet>
         <title>{title} | Wanderhood</title>
         <meta name="description" content={desc} />
-        <link rel="canonical" href={`https://wanderhood.com/guides/${citySlug}/${type}`} />
+        <link rel="canonical" href={`https://wanderhood.app/guides/${citySlug}/${type}`} />
         <meta property="og:title" content={`${title} | Wanderhood`} />
         <meta property="og:description" content={desc} />
         <meta property="og:type" content="article" />
@@ -114,11 +114,11 @@ export default function CityGuidePage() {
               "@type": "Article",
               "headline": title,
               "description": desc,
-              "url": `https://wanderhood.com/guides/${citySlug}/${type}`,
+              "url": `https://wanderhood.app/guides/${citySlug}/${type}`,
               "about": {
                 "@type": "City",
                 "name": city.name,
-                "url": `https://wanderhood.com/city/${citySlug}`,
+                "url": `https://wanderhood.app/city/${citySlug}`,
               },
             })}
           </script>

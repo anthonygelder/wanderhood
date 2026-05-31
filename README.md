@@ -50,7 +50,7 @@ The dev server runs on `http://localhost:5000`. It uses `.env` for environment v
 | `SESSION_SECRET` | Yes (prod) | Session encryption key |
 | `REPL_ID` | Yes (prod) | Replit app ID for OIDC auth |
 | `ISSUER_URL` | No | OIDC issuer (defaults to `https://replit.com/oidc`) |
-| `BASE_URL` | No | App base URL (defaults to `https://wanderhood.com`) |
+| `BASE_URL` | No | App base URL (defaults to `https://wanderhood.app`) |
 | `PORT` | No | Server port (defaults to 5000) |
 
 ## Database Setup

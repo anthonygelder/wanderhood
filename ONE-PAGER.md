@@ -88,4 +88,4 @@ React + TypeScript · Express · PostgreSQL · Drizzle ORM · Google Maps API ·
 
 ---
 
-*wanderhood.com — find your neighborhood, not just your hotel*
+*wanderhood.app — find your neighborhood, not just your hotel*

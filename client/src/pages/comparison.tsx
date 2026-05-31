@@ -63,7 +63,7 @@ export default function ComparisonPage() {
       <Helmet>
         <title>{title} | Wanderhood</title>
         {description && <meta name="description" content={description} />}
-        <link rel="canonical" href={`https://wanderhood.com/compare/${citySlug}/${n1Slug}/${n2Slug}`} />
+        <link rel="canonical" href={`https://wanderhood.app/compare/${citySlug}/${n1Slug}/${n2Slug}`} />
         <meta property="og:title" content={`${title} | Wanderhood`} />
         {description && <meta property="og:description" content={description} />}
         {n1 && n2 && city && (
@@ -73,7 +73,7 @@ export default function ComparisonPage() {
               "@type": "ItemList",
               "name": title,
               "description": description,
-              "url": `https://wanderhood.com/compare/${citySlug}/${n1Slug}/${n2Slug}`,
+              "url": `https://wanderhood.app/compare/${citySlug}/${n1Slug}/${n2Slug}`,
               "itemListElement": [n1, n2].map((n, i) => ({
                 "@type": "ListItem",
                 "position": i + 1,
@@ -81,7 +81,7 @@ export default function ComparisonPage() {
                   "@type": "TouristAttraction",
                   "name": n.name,
                   "description": n.description,
-                  "url": `https://wanderhood.com/city/${citySlug}/${n.slug}`,
+                  "url": `https://wanderhood.app/city/${citySlug}/${n.slug}`,
                   "image": n.heroImage,
                   "containedInPlace": { "@type": "City", "name": city.name },
                 },

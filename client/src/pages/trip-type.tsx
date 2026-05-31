@@ -91,7 +91,7 @@ export default function TripTypePage() {
       <Helmet>
         <title>{config.headline} | Wanderhood</title>
         <meta name="description" content={config.description} />
-        <link rel="canonical" href={`https://wanderhood.com/neighborhoods/${purposeSlug}`} />
+        <link rel="canonical" href={`https://wanderhood.app/neighborhoods/${purposeSlug}`} />
         <meta property="og:title" content={`${config.headline} | Wanderhood`} />
         <meta property="og:description" content={config.description} />
         <meta property="og:type" content="website" />
@@ -102,7 +102,7 @@ export default function TripTypePage() {
               "@type": "ItemList",
               "name": config.headline,
               "description": config.description,
-              "url": `https://wanderhood.com/neighborhoods/${purposeSlug}`,
+              "url": `https://wanderhood.app/neighborhoods/${purposeSlug}`,
               "numberOfItems": results.length,
               "itemListElement": results.slice(0, 10).map((r, i) => ({
                 "@type": "ListItem",
@@ -111,7 +111,7 @@ export default function TripTypePage() {
                   "@type": "TouristAttraction",
                   "name": `${r.neighborhood.name}, ${r.city.name}`,
                   "description": r.neighborhood.description,
-                  "url": `https://wanderhood.com/city/${r.city.slug}/${r.neighborhood.slug}`,
+                  "url": `https://wanderhood.app/city/${r.city.slug}/${r.neighborhood.slug}`,
                   "image": r.neighborhood.heroImage,
                 },
               })),

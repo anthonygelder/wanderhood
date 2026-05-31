@@ -178,8 +178,6 @@ The three pending streams are implemented and rendering on city pages — they j
 
 ### Quick wins (hours)
 - **Pending affiliate codes** — Airalo, Skyscanner, World Nomads, Cover Genius all have placeholder IDs. Get the accounts approved and swap 4 strings.
-- **Email sender domain** — `server/email.ts` still has `wanderhood.com` in the FROM address. Change to `wanderhood.app`.
-- **`cities.tsx` canonical URL** — still says `wanderhood.com/cities`. Same fix needed in `pages/cities.tsx`.
 - **Language toggle hidden** — city/neighborhood pages aren't translated yet. The toggle is hidden until they are. Complete the translations and re-enable it.
 
 ### Medium (days)
