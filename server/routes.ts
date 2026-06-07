@@ -384,6 +384,232 @@ export async function registerRoutes(
     }
   });
 
+
+  // Trip endpoints (protected)
+  app.get("/api/trips", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      const userTrips = await storage.getTripsByUserId(userId);
+      res.json(userTrips);
+    } catch (error) {
+      console.error("Error fetching trips:", error);
+      res.status(500).json({ error: "Failed to fetch trips" });
+    }
+  });
+
+  app.post("/api/trips", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      const { name } = req.body;
+      if (!name || typeof name !== "string" || name.trim().length === 0) {
+        return res.status(400).json({ error: "Trip name required" });
+      }
+      const trip = await storage.createTrip({ userId, name: name.trim() });
+      res.status(201).json(trip);
+    } catch (error) {
+      console.error("Error creating trip:", error);
+      res.status(500).json({ error: "Failed to create trip" });
+    }
+  });
+
+  app.get("/api/trips/:id", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      const tripId = parseInt(req.params.id, 10);
+      if (isNaN(tripId)) return res.status(400).json({ error: "Invalid trip ID" });
+      const trip = await storage.getTripById(tripId, userId);
+      if (!trip) return res.status(404).json({ error: "Trip not found" });
+      res.json(trip);
+    } catch (error) {
+      console.error("Error fetching trip:", error);
+      res.status(500).json({ error: "Failed to fetch trip" });
+    }
+  });
+
+  app.delete("/api/trips/:id", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      const tripId = parseInt(req.params.id, 10);
+      if (isNaN(tripId)) return res.status(400).json({ error: "Invalid trip ID" });
+      await storage.deleteTrip(tripId, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting trip:", error);
+      res.status(500).json({ error: "Failed to delete trip" });
+    }
+  });
+
+  app.post("/api/trips/:id/neighborhoods", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      const tripId = parseInt(req.params.id, 10);
+      if (isNaN(tripId)) return res.status(400).json({ error: "Invalid trip ID" });
+      const trip = await storage.getTripById(tripId, userId);
+      if (!trip) return res.status(404).json({ error: "Trip not found" });
+      const { neighborhoodId, cityId, notes } = req.body;
+      if (!neighborhoodId || !cityId) return res.status(400).json({ error: "neighborhoodId and cityId required" });
+      const already = await storage.isNeighborhoodInTrip(tripId, neighborhoodId);
+      if (already) return res.status(400).json({ error: "Already in trip" });
+      const entry = await storage.addNeighborhoodToTrip({ tripId, neighborhoodId, cityId, notes: notes || null, sortOrder: 0 });
+      res.status(201).json(entry);
+    } catch (error) {
+      console.error("Error adding neighborhood to trip:", error);
+      res.status(500).json({ error: "Failed to add neighborhood" });
+    }
+  });
+
+  app.delete("/api/trips/:id/neighborhoods/:neighborhoodId", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      const tripId = parseInt(req.params.id, 10);
+      if (isNaN(tripId)) return res.status(400).json({ error: "Invalid trip ID" });
+      const trip = await storage.getTripById(tripId, userId);
+      if (!trip) return res.status(404).json({ error: "Trip not found" });
+      await storage.removeNeighborhoodFromTrip(tripId, req.params.neighborhoodId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing neighborhood from trip:", error);
+      res.status(500).json({ error: "Failed to remove neighborhood" });
+    }
+  });
+
+  // AI: generate trip narrative
+  app.post("/api/trips/:id/ai/narrative", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      const tripId = parseInt(req.params.id, 10);
+      if (isNaN(tripId)) return res.status(400).json({ error: "Invalid trip ID" });
+      const trip = await storage.getTripById(tripId, userId);
+      if (!trip) return res.status(404).json({ error: "Trip not found" });
+      if (trip.neighborhoods.length === 0) return res.status(400).json({ error: "Trip has no neighborhoods" });
+      if (!anthropic) return res.status(503).json({ error: "AI service not configured" });
+
+      // Enrich with neighborhood data
+      const enriched = await Promise.all(
+        trip.neighborhoods.map(async (tn) => {
+          const n = await storage.getNeighborhoodById(tn.neighborhoodId);
+          const city = await storage.getCityById(tn.cityId);
+          return n && city ? { neighborhood: n, city } : null;
+        })
+      );
+      const valid = enriched.filter(Boolean) as { neighborhood: any; city: any }[];
+
+      const neighborhoodList = valid
+        .map((v) => `- ${v.neighborhood.name}, ${v.city.name} (${v.neighborhood.vibe?.join(", ")})`)
+        .join("\n");
+
+      const response = await anthropic.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 300,
+        system: [
+          {
+            type: "text",
+            text: "You write vivid, practical trip narratives for car-free travelers. 3-4 sentences. Describe the trip as a flowing journey — reference specific neighborhoods, their vibes, and how they connect. Be concrete and inspiring, not generic.",
+            cache_control: { type: "ephemeral" },
+          },
+        ] as any,
+        messages: [{
+          role: "user",
+          content: `Write a trip narrative for a trip called "${trip.name}" with these neighborhoods in order:\n${neighborhoodList}\n\nDescribe the arc of the journey — what makes this sequence of places compelling for a car-free traveler.`,
+        }],
+      });
+
+      const block = response.content[0];
+      const narrative = block.type === "text" ? block.text : "";
+      res.json({ narrative });
+    } catch (error) {
+      console.error("Error generating trip narrative:", error);
+      res.status(500).json({ error: "Failed to generate narrative" });
+    }
+  });
+
+  // AI: suggest 3 trip names
+  app.post("/api/ai/trips/suggest-name", isAuthenticated, async (req, res) => {
+    try {
+      const { neighborhoods } = req.body;
+      if (!neighborhoods?.length) return res.status(400).json({ error: "neighborhoods required" });
+      if (!anthropic) return res.status(503).json({ error: "AI service not configured" });
+
+      const list = neighborhoods
+        .map((n: any) => `${n.neighborhoodName}, ${n.cityName} (${(n.vibes || []).join(", ")})`)
+        .join("\n");
+
+      const response = await anthropic.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 100,
+        system: [
+          {
+            type: "text",
+            text: "You suggest short, evocative trip names (3-5 words each). Names should capture the mood or theme of the places. Respond with JSON only: {\"names\": [\"Name 1\", \"Name 2\", \"Name 3\"]}",
+            cache_control: { type: "ephemeral" },
+          },
+        ] as any,
+        messages: [{
+          role: "user",
+          content: `Suggest 3 trip names for an itinerary with these neighborhoods:\n${list}`,
+        }],
+      });
+
+      const block = response.content[0];
+      const raw = block.type === "text" ? block.text : '{"names":[]}';
+      const { names } = JSON.parse(raw);
+      res.json({ names });
+    } catch (error) {
+      console.error("Error suggesting trip names:", error);
+      res.status(500).json({ error: "Failed to suggest names" });
+    }
+  });
+
+  // AI: suggest missing neighborhood types (gap analysis)
+  app.post("/api/trips/:id/ai/suggest-neighborhoods", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      const tripId = parseInt(req.params.id, 10);
+      if (isNaN(tripId)) return res.status(400).json({ error: "Invalid trip ID" });
+      const trip = await storage.getTripById(tripId, userId);
+      if (!trip) return res.status(404).json({ error: "Trip not found" });
+      if (trip.neighborhoods.length === 0) return res.status(400).json({ error: "Trip has no neighborhoods" });
+      if (!anthropic) return res.status(503).json({ error: "AI service not configured" });
+
+      const enriched = await Promise.all(
+        trip.neighborhoods.map(async (tn) => {
+          const n = await storage.getNeighborhoodById(tn.neighborhoodId);
+          const city = await storage.getCityById(tn.cityId);
+          return n && city ? { neighborhood: n, city } : null;
+        })
+      );
+      const valid = enriched.filter(Boolean) as { neighborhood: any; city: any }[];
+
+      const neighborhoodList = valid
+        .map((v) => `- ${v.neighborhood.name}, ${v.city.name}: vibes=${v.neighborhood.vibe?.join(", ")}, food=${v.neighborhood.scores?.foodCoffeeDensity}, nightlife=${v.neighborhood.scores?.nightlife}, safety=${v.neighborhood.scores?.safety}, localVibes=${v.neighborhood.scores?.localVibes}`)
+        .join("\n");
+
+      const response = await anthropic.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 200,
+        system: [
+          {
+            type: "text",
+            text: "You are a travel advisor who identifies what's missing from a trip itinerary. Analyze the vibes and scores of current neighborhoods and identify 1-2 gaps. Respond with JSON only: {\"suggestions\": [{\"gap\": \"short description of what\'s missing\", \"suggestion\": \"specific neighborhood type or city to add\"}]}",
+            cache_control: { type: "ephemeral" },
+          },
+        ] as any,
+        messages: [{
+          role: "user",
+          content: `Analyze this trip itinerary and identify what experiences are missing:\n${neighborhoodList}\n\nWhat 1-2 neighborhood types or vibes would round out this trip?`,
+        }],
+      });
+
+      const block = response.content[0];
+      const raw = block.type === "text" ? block.text : '{"suggestions":[]}';
+      const { suggestions } = JSON.parse(raw);
+      res.json({ suggestions });
+    } catch (error) {
+      console.error("Error generating neighborhood suggestions:", error);
+      res.status(500).json({ error: "Failed to generate suggestions" });
+    }
+  });
+
   // Favorites endpoints (protected)
   app.get("/api/favorites", isAuthenticated, async (req, res) => {
     try {

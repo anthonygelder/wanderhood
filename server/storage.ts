@@ -4,6 +4,11 @@ import type {
   Hotel,
   Experience,
   Restaurant,
+  Trip,
+  TripNeighborhood,
+  TripWithNeighborhoods,
+  InsertTrip,
+  InsertTripNeighborhood,
   QuestionnaireInput,
   Recommendation,
   Favorite,
@@ -12,7 +17,7 @@ import type {
   InsertReview,
   TripPurposeOption,
 } from "@shared/schema";
-import { favorites, neighborhoodDescriptions, reviews } from "@shared/schema";
+import { favorites, neighborhoodDescriptions, reviews, trips, tripNeighborhoods } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
 import { cities, neighborhoods, hotels } from "./data/cities";
@@ -66,6 +71,14 @@ export interface IStorage {
   addFavorite(favorite: InsertFavorite): Promise<Favorite>;
   removeFavorite(userId: string, neighborhoodId: string): Promise<void>;
   isFavorite(userId: string, neighborhoodId: string): Promise<boolean>;
+
+  getTripsByUserId(userId: string): Promise<TripWithNeighborhoods[]>;
+  getTripById(tripId: number, userId: string): Promise<TripWithNeighborhoods | undefined>;
+  createTrip(trip: InsertTrip): Promise<Trip>;
+  deleteTrip(tripId: number, userId: string): Promise<void>;
+  addNeighborhoodToTrip(data: InsertTripNeighborhood): Promise<TripNeighborhood>;
+  removeNeighborhoodFromTrip(tripId: number, neighborhoodId: string): Promise<void>;
+  isNeighborhoodInTrip(tripId: number, neighborhoodId: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -383,6 +396,56 @@ export class MemStorage implements IStorage {
 
     return top3;
   }
+
+  async getTripsByUserId(userId: string): Promise<TripWithNeighborhoods[]> {
+    if (!db) return [];
+    const userTrips = await db.select().from(trips).where(eq(trips.userId, userId)).orderBy(desc(trips.createdAt));
+    const result: TripWithNeighborhoods[] = [];
+    for (const trip of userTrips) {
+      const neighborhoods = await db.select().from(tripNeighborhoods).where(eq(tripNeighborhoods.tripId, trip.id)).orderBy(tripNeighborhoods.sortOrder);
+      result.push({ ...trip, createdAt: trip.createdAt.toISOString(), neighborhoods: neighborhoods.map(n => ({ ...n, createdAt: n.createdAt.toISOString(), notes: n.notes ?? null })) });
+    }
+    return result;
+  }
+
+  async getTripById(tripId: number, userId: string): Promise<TripWithNeighborhoods | undefined> {
+    if (!db) return undefined;
+    const [trip] = await db.select().from(trips).where(and(eq(trips.id, tripId), eq(trips.userId, userId)));
+    if (!trip) return undefined;
+    const neighborhoods = await db.select().from(tripNeighborhoods).where(eq(tripNeighborhoods.tripId, trip.id)).orderBy(tripNeighborhoods.sortOrder);
+    return { ...trip, createdAt: trip.createdAt.toISOString(), neighborhoods: neighborhoods.map(n => ({ ...n, createdAt: n.createdAt.toISOString(), notes: n.notes ?? null })) };
+  }
+
+  async createTrip(trip: InsertTrip): Promise<Trip> {
+    if (!db) throw new Error("Database not configured");
+    const [created] = await db.insert(trips).values(trip).returning();
+    return created;
+  }
+
+  async deleteTrip(tripId: number, userId: string): Promise<void> {
+    if (!db) return;
+    await db.delete(trips).where(and(eq(trips.id, tripId), eq(trips.userId, userId)));
+  }
+
+  async addNeighborhoodToTrip(data: InsertTripNeighborhood): Promise<TripNeighborhood> {
+    if (!db) throw new Error("Database not configured");
+    const existing = await db.select().from(tripNeighborhoods).where(eq(tripNeighborhoods.tripId, data.tripId));
+    const sortOrder = existing.length;
+    const [created] = await db.insert(tripNeighborhoods).values({ ...data, sortOrder }).returning();
+    return created;
+  }
+
+  async removeNeighborhoodFromTrip(tripId: number, neighborhoodId: string): Promise<void> {
+    if (!db) return;
+    await db.delete(tripNeighborhoods).where(and(eq(tripNeighborhoods.tripId, tripId), eq(tripNeighborhoods.neighborhoodId, neighborhoodId)));
+  }
+
+  async isNeighborhoodInTrip(tripId: number, neighborhoodId: string): Promise<boolean> {
+    if (!db) return false;
+    const [row] = await db.select().from(tripNeighborhoods).where(and(eq(tripNeighborhoods.tripId, tripId), eq(tripNeighborhoods.neighborhoodId, neighborhoodId)));
+    return !!row;
+  }
+
 }
 
 export const storage = new MemStorage();

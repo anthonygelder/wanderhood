@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LogOut, Heart, User } from "lucide-react";
+import { LogOut, Heart, User, Map } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "wouter";
 
@@ -88,6 +88,12 @@ export function UserMenu() {
           <Link href="/favorites" className="flex items-center cursor-pointer">
             <Heart className="w-4 h-4 mr-2" />
             Saved Neighborhoods
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/trips" className="flex items-center cursor-pointer" data-testid="link-trips">
+            <Map className="w-4 h-4 mr-2" />
+            My Trips
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
