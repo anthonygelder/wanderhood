@@ -250,6 +250,38 @@ export const recommendationSchema = z.object({
 
 export type Recommendation = z.infer<typeof recommendationSchema>;
 
+
+// Restaurant schema
+export const restaurantCuisineSchema = z.enum([
+  "local",
+  "cafe",
+  "italian",
+  "french",
+  "japanese",
+  "seafood",
+  "vegetarian",
+  "international",
+  "spanish",
+  "american",
+]);
+export type RestaurantCuisine = z.infer<typeof restaurantCuisineSchema>;
+
+export const restaurantSchema = z.object({
+  id: z.string(),
+  cityId: z.string(),
+  neighborhoodId: z.string().optional(),
+  name: z.string(),
+  cuisine: restaurantCuisineSchema,
+  priceLevel: z.number().min(1).max(4),
+  rating: z.number().min(0).max(5),
+  reviewCount: z.number(),
+  image: z.string(),
+  description: z.string(),
+  affiliateUrl: z.string(),
+  platform: z.enum(["thefork", "opentable"]),
+});
+export type Restaurant = z.infer<typeof restaurantSchema>;
+
 // API response schemas
 export const citiesResponseSchema = z.array(citySchema);
 export const neighborhoodsResponseSchema = z.array(neighborhoodSchema);

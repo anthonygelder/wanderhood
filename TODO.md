@@ -47,7 +47,7 @@
 - [ ] Push notifications / email alerts when new neighborhoods are added in a user's saved cities
 - [ ] PWA manifest + service worker for "Add to Home Screen"
 - [ ] Real-time hotel pricing via Booking.com API — replace static price range strings with live rates
-- [ ] Restaurant / café affiliate listings per neighborhood (OpenTable, Resy, or TheFork)
+- [x] Restaurant / café affiliate listings per neighborhood (OpenTable, Resy, or TheFork)
 - [x] User review system — brief star rating + one-line tip per visited neighborhood
 - [x] Neighborhood photo gallery — user-submitted or curated additional images via Places API
 

@@ -3,6 +3,7 @@ import type {
   Neighborhood,
   Hotel,
   Experience,
+  Restaurant,
   QuestionnaireInput,
   Recommendation,
   Favorite,
@@ -16,6 +17,7 @@ import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
 import { cities, neighborhoods, hotels } from "./data/cities";
 import { experiences } from "./data/experiences";
+import { restaurants } from "./data/restaurants";
 
 const AWIN_AFFILIATE_ID = "2700154";
 const AWIN_MID = "6776";
@@ -50,6 +52,7 @@ export interface IStorage {
   getNeighborhoodBySlug(citySlug: string, neighborhoodSlug: string): Promise<Neighborhood | undefined>;
   getHotelsByNeighborhoodId(neighborhoodId: string): Promise<Hotel[]>;
   getExperiencesByCityId(cityId: string): Promise<Experience[]>;
+  getRestaurantsByCityId(cityId: string): Promise<Restaurant[]>;
   getRecommendations(input: QuestionnaireInput): Promise<Recommendation[]>;
   updateNeighborhoodDescription(id: string, description: string): Promise<void>;
   getTopNeighborhoodsByPurpose(purpose: TripPurposeOption, limit?: number): Promise<Array<{ neighborhood: Neighborhood; city: City; score: number }>>;
@@ -70,6 +73,7 @@ export class MemStorage implements IStorage {
   private neighborhoods: Neighborhood[] = [...neighborhoods];
   private hotels: Hotel[] = hotels;
   private experiences: Experience[] = experiences;
+  private restaurants: Restaurant[] = restaurants;
 
   async getStats(): Promise<{ cities: number; neighborhoods: number; hotels: number }> {
     return {
@@ -178,6 +182,10 @@ export class MemStorage implements IStorage {
 
   async getExperiencesByCityId(cityId: string): Promise<Experience[]> {
     return this.experiences.filter((e) => e.cityId === cityId);
+  }
+
+  async getRestaurantsByCityId(cityId: string): Promise<Restaurant[]> {
+    return this.restaurants.filter((r) => r.cityId === cityId);
   }
 
   async updateNeighborhoodDescription(id: string, description: string): Promise<void> {

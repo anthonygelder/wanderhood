@@ -233,6 +233,18 @@ export async function registerRoutes(
       res.status(500).json({ error: "Failed to fetch experiences" });
     }
   });
+  // Get restaurants for a city
+  app.get("/api/cities/:slug/restaurants", async (req, res) => {
+    try {
+      const city = await storage.getCityBySlug(req.params.slug);
+      if (!city) return res.status(404).json({ error: "City not found" });
+      const restaurants = await storage.getRestaurantsByCityId(city.id);
+      res.json(restaurants);
+    } catch (error) {
+      console.error("Error fetching restaurants:", error);
+      res.status(500).json({ error: "Failed to fetch restaurants" });
+    }
+  });
 
   // Get recommendations based on questionnaire
   app.post("/api/recommendations", recommendationsLimiter, async (req, res) => {

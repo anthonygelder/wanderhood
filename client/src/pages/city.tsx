@@ -11,6 +11,7 @@ import { NeighborhoodComparison } from "@/components/neighborhood-comparison";
 import { GoogleMap } from "@/components/google-map";
 import { HotelsSection } from "@/components/hotels-section";
 import { ExperiencesSection } from "@/components/experiences-section";
+import { RestaurantsSection } from "@/components/restaurants-section";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ResultsMapSection } from "@/components/results-map-section";
 import { FAQSection } from "@/components/faq-section";
@@ -227,6 +228,7 @@ export default function CityPage() {
             <TabsList>
               <TabsTrigger value="hotels">🏨 Hotels</TabsTrigger>
               <TabsTrigger value="experiences">🎟️ Experiences</TabsTrigger>
+              <TabsTrigger value="restaurants">🍽️ Restaurants</TabsTrigger>
             </TabsList>
             <TabsContent value="hotels">
               <HotelsSection
@@ -238,6 +240,14 @@ export default function CityPage() {
             </TabsContent>
             <TabsContent value="experiences">
               <ExperiencesSection
+                citySlug={city.slug}
+                neighborhoods={neighborhoods}
+                selectedNeighborhood={selectedNeighborhood}
+                onNeighborhoodChange={setSelectedNeighborhood}
+              />
+            </TabsContent>
+            <TabsContent value="restaurants">
+              <RestaurantsSection
                 citySlug={city.slug}
                 neighborhoods={neighborhoods}
                 selectedNeighborhood={selectedNeighborhood}
