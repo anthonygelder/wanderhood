@@ -79,6 +79,7 @@ export interface IStorage {
   addNeighborhoodToTrip(data: InsertTripNeighborhood): Promise<TripNeighborhood>;
   removeNeighborhoodFromTrip(tripId: number, neighborhoodId: string): Promise<void>;
   isNeighborhoodInTrip(tripId: number, neighborhoodId: string): Promise<boolean>;
+  getSimilarNeighborhoods(neighborhoodId: string, limit?: number): Promise<Array<{ neighborhood: Neighborhood; city: City; score: number }>>;
 }
 
 export class MemStorage implements IStorage {
@@ -444,6 +445,44 @@ export class MemStorage implements IStorage {
     if (!db) return false;
     const [row] = await db.select().from(tripNeighborhoods).where(and(eq(tripNeighborhoods.tripId, tripId), eq(tripNeighborhoods.neighborhoodId, neighborhoodId)));
     return !!row;
+  }
+
+  async getSimilarNeighborhoods(neighborhoodId: string, limit = 4): Promise<Array<{ neighborhood: Neighborhood; city: City; score: number }>> {
+    const source = this.neighborhoods.find((n) => n.id === neighborhoodId);
+    if (!source) return [];
+
+    const PRICE_ORDER = ["budget", "moderate", "upscale", "luxury"];
+    const sourcePriceIdx = PRICE_ORDER.indexOf(source.priceLevel);
+
+    const scored = this.neighborhoods
+      .filter((n) => n.id !== source.id && n.cityId !== source.cityId)
+      .map((n) => {
+        let score = 0;
+
+        // Vibe overlap: +12 per shared vibe
+        const sharedVibes = source.vibe.filter((v) => n.vibe.includes(v));
+        score += sharedVibes.length * 12;
+
+        // Score similarity across 6 dimensions: max 60 pts total
+        const dims: Array<keyof typeof source.scores> = [
+          "walkability", "foodCoffeeDensity", "safety", "localVibes", "nightlife", "transitConnectivity",
+        ];
+        for (const dim of dims) {
+          score += Math.max(0, 10 - Math.abs(source.scores[dim] - n.scores[dim]) / 10);
+        }
+
+        // Price level proximity: +10 exact, +5 one tier away
+        const nPriceIdx = PRICE_ORDER.indexOf(n.priceLevel);
+        const priceDiff = Math.abs(sourcePriceIdx - nPriceIdx);
+        if (priceDiff === 0) score += 10;
+        else if (priceDiff === 1) score += 5;
+
+        const city = this.cities.find((c) => c.id === n.cityId);
+        return city ? { neighborhood: this.resolveNeighborhood(n), city, score: Math.round(score) } : null;
+      })
+      .filter(Boolean) as Array<{ neighborhood: Neighborhood; city: City; score: number }>;
+
+    return scored.sort((a, b) => b.score - a.score).slice(0, limit);
   }
 
 }
