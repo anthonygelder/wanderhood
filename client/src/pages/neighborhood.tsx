@@ -10,6 +10,7 @@ import { AirbnbCard } from "@/components/airbnb-card";
 import { TravelInsuranceCard } from "@/components/travel-insurance-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AddToTripButton } from "@/components/add-to-trip-button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -241,6 +242,7 @@ export default function NeighborhoodPage() {
                   </a>
                 </Button>
               </Link>
+              <AddToTripButton neighborhoodId={neighborhood.id} cityId={neighborhood.cityId} />
               <Link href={`/city/${city.slug}`}>
                 <a className="block text-center text-sm text-muted-foreground hover:text-foreground underline underline-offset-4">
                   ← Back to {city.name} guide

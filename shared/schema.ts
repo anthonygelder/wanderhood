@@ -251,6 +251,60 @@ export const recommendationSchema = z.object({
 export type Recommendation = z.infer<typeof recommendationSchema>;
 
 
+
+// Trips table — named itineraries of neighborhoods across cities
+export const trips = pgTable("trips", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Trip neighborhoods — ordered list of neighborhoods within a trip
+export const tripNeighborhoods = pgTable("trip_neighborhoods", {
+  id: serial("id").primaryKey(),
+  tripId: integer("trip_id").notNull().references(() => trips.id, { onDelete: "cascade" }),
+  neighborhoodId: varchar("neighborhood_id", { length: 255 }).notNull(),
+  cityId: varchar("city_id", { length: 255 }).notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  notes: varchar("notes", { length: 280 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const tripsRelations = relations(trips, ({ many }) => ({
+  neighborhoods: many(tripNeighborhoods),
+}));
+
+export const tripNeighborhoodsRelations = relations(tripNeighborhoods, ({ one }) => ({
+  trip: one(trips, { fields: [tripNeighborhoods.tripId], references: [trips.id] }),
+}));
+
+export const insertTripSchema = createInsertSchema(trips).omit({ id: true, createdAt: true });
+export type InsertTrip = z.infer<typeof insertTripSchema>;
+export type Trip = typeof trips.$inferSelect;
+
+export const insertTripNeighborhoodSchema = createInsertSchema(tripNeighborhoods).omit({ id: true, createdAt: true });
+export type InsertTripNeighborhood = z.infer<typeof insertTripNeighborhoodSchema>;
+export type TripNeighborhood = typeof tripNeighborhoods.$inferSelect;
+
+// Trip with nested neighborhoods (API response shape)
+export const tripWithNeighborhoodsSchema = z.object({
+  id: z.number(),
+  userId: z.string(),
+  name: z.string(),
+  createdAt: z.string(),
+  neighborhoods: z.array(z.object({
+    id: z.number(),
+    tripId: z.number(),
+    neighborhoodId: z.string(),
+    cityId: z.string(),
+    sortOrder: z.number(),
+    notes: z.string().nullable(),
+    createdAt: z.string(),
+  })),
+});
+export type TripWithNeighborhoods = z.infer<typeof tripWithNeighborhoodsSchema>;
+
 // Restaurant schema
 export const restaurantCuisineSchema = z.enum([
   "local",
