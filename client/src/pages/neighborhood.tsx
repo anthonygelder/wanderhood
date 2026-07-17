@@ -11,6 +11,7 @@ import { TravelInsuranceCard } from "@/components/travel-insurance-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AddToTripButton } from "@/components/add-to-trip-button";
+import { SimilarNeighborhoods } from "@/components/similar-neighborhoods";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -392,6 +393,8 @@ export default function NeighborhoodPage() {
 
             {/* Travel insurance */}
             <TravelInsuranceCard cityName={city.name} cityId={neighborhood.cityId} />
+
+            <SimilarNeighborhoods neighborhoodId={neighborhood.id} neighborhoodName={neighborhood.name} />
 
             {/* Reviews */}
             <ReviewSection

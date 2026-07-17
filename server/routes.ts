@@ -610,6 +610,18 @@ export async function registerRoutes(
     }
   });
 
+
+  // Similar neighborhoods — cross-city suggestions based on vibe + score similarity
+  app.get("/api/neighborhoods/:id/similar", async (req, res) => {
+    try {
+      const similar = await storage.getSimilarNeighborhoods(req.params.id);
+      res.json(similar);
+    } catch (error) {
+      console.error("Error fetching similar neighborhoods:", error);
+      res.status(500).json({ error: "Failed to fetch similar neighborhoods" });
+    }
+  });
+
   // Favorites endpoints (protected)
   app.get("/api/favorites", isAuthenticated, async (req, res) => {
     try {
