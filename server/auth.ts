@@ -74,13 +74,19 @@ export async function setupAuth(app: Express) {
 }
 
 export function registerAuthRoutes(app: Express): void {
-  // Google OAuth
-  app.get("/api/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
-  app.get(
-    "/api/auth/google/callback",
-    passport.authenticate("google", { failureRedirect: "/?auth=failed" }),
-    (_req, res) => res.redirect("/")
-  );
+  // Google OAuth — only register routes if credentials are configured
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    app.get("/api/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+    app.get(
+      "/api/auth/google/callback",
+      passport.authenticate("google", { failureRedirect: "/?auth=failed" }),
+      (_req, res) => res.redirect("/")
+    );
+  } else {
+    app.get("/api/auth/google", (_req, res) =>
+      res.status(503).json({ message: "Google sign-in is not configured" })
+    );
+  }
 
 
   app.get("/api/logout", (req, res) => {
